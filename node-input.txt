@@ -1,0 +1,9 @@
+canada:
+usa china
+
+usa:
+canada china
+
+china:
+canada usa
+
