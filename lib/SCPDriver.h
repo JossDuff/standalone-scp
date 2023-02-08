@@ -4,14 +4,14 @@
 // under the Apache License, Version 2.0. See the COPYING file at the root
 // of this distribution or at http://www.apache.org/licenses/LICENSE-2.0
 
-#include "../lib/NonCopyable.h"
+#include "util/NonCopyable.h"
 #include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
 #include <set>
 
-//#include "xdr/Stellar-SCP.h"
+#include "xdr/Stellar-SCP.h"
 
 namespace stellar
 {

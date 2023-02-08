@@ -5,7 +5,7 @@
 #include "BallotProtocol.h"
 
 #include "Slot.h"
-#include "crypto/Hex.h"
+#include "../lib/Hex.h"
 #include "lib/json/json.h"
 #include "scp/LocalNode.h"
 #include "scp/QuorumSetUtils.h"

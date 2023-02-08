@@ -8,9 +8,9 @@
 #include <set>
 #include <vector>
 
-#include "lib/json/json-forwards.h"
-#include "scp/SCPDriver.h"
-#include "util/HashOfHash.h"
+#include "../lib/json-forwards.h"
+#include "../lib/HashOfHash.h"
+#include "SCPDriver.h"
 
 namespace stellar
 {

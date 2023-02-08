@@ -6,4 +6,3 @@ canada china
 
 china:
 canada usa
-

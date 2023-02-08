@@ -10,8 +10,8 @@
 #include <memory>
 #include <set>
 
-#include "lib/json/json-forwards.h"
-#include "scp/SCPDriver.h"
+#include "../lib/json-forwards.h"
+#include "SCPDriver.h"
 
 namespace stellar
 {
