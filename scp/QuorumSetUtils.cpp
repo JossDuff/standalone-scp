@@ -5,8 +5,8 @@
 #include "QuorumSetUtils.h"
 
 #include "util/XDROperators.h"
-#include "xdr/Stellar-SCP.h"
-#include "xdr/Stellar-types.h"
+#include "../lib/Stellar-SCP.h"
+#include "../lib/Stellar-types.h"
 
 #include <algorithm>
 #include <set>
