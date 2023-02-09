@@ -8,7 +8,7 @@
 #include "LocalNode.h"
 #include "NominationProtocol.h"
 #include "../lib/json-forwards.h"
-#include "scp/SCP.h"
+#include "SCP.h"
 #include <functional>
 #include <memory>
 #include <set>
