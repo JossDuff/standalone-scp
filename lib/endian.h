@@ -37,7 +37,7 @@ errstr(int no)
 #if MSVC
 #define XDRPP_WORDS_BIGENDIAN 0
 #else // !MSVC
-#include <xdrpp/build_endian.h>
+#include "build_endian.h"
 #endif // !MSVC
 #endif // !XDRPP_WORDS_BIGENDIAN
 
