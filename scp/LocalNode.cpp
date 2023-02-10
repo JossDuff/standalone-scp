@@ -4,16 +4,16 @@
 
 #include "LocalNode.h"
 
-#include "crypto/Hex.h"
-#include "crypto/SecretKey.h"
-#include "lib/json/json.h"
-#include "scp/QuorumSetUtils.h"
-#include "util/GlobalChecks.h"
-#include "util/Logging.h"
-#include "util/XDROperators.h"
-#include "util/numeric.h"
-#include "xdrpp/marshal.h"
-#include <Tracy.hpp>
+#include "../lib/Hex.h"
+#include "../lib/SecretKey.h"
+#include "../lib/json.h"
+#include "QuorumSetUtils.h"
+#include "../lib/GlobalChecks.h"
+#include "../lib/Logging.h"
+#include "../lib/XDROperators.h"
+#include "../lib/numeric.h"
+#include "../lib/marshal.h"
+#include "../lib/Tracy.hpp"
 #include <algorithm>
 #include <functional>
 

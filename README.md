@@ -6,6 +6,9 @@ herder is example implementation of scp driver class from stellar-core.  We'll h
 https://github.com/bobg/scp
 example scp in go.  Will be a good reference
 
+https://doc.libsodium.org/installation
+need to install sodium
+
 # TODO
  - node input file with slices and parser for that file
  - parse into nodes and qslices
