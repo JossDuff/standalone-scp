@@ -2,17 +2,17 @@
 // under the Apache License, Version 2.0. See the COPYING file at the root
 // of this distribution or at http://www.apache.org/licenses/LICENSE-2.0
 
-#include "scp/SCP.h"
-#include "crypto/Hex.h"
-#include "scp/LocalNode.h"
-#include "scp/Slot.h"
-#include "util/GlobalChecks.h"
-#include "util/Logging.h"
-#include "util/XDROperators.h"
-#include "xdrpp/marshal.h"
+#include "SCP.h"
+#include "../lib/Hex.h"
+#include "LocalNode.h"
+#include "Slot.h"
+#include "../lib/GlobalChecks.h"
+#include "../lib/Logging.h"
+#include "../lib/XDROperators.h"
+#include "../lib/marshal.h"
 
 #include <algorithm>
-#include <lib/json/json.h>
+#include "../lib/json.h"
 #include <sstream>
 
 namespace stellar

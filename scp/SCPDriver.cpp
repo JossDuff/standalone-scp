@@ -6,11 +6,11 @@
 
 #include <algorithm>
 
-#include "crypto/Hex.h"
-#include "crypto/KeyUtils.h"
-#include "crypto/SecretKey.h"
-#include "util/GlobalChecks.h"
-#include "xdrpp/marshal.h"
+#include "../lib/Hex.h"
+#include "../lib/KeyUtils.h"
+#include "../lib/SecretKey.h"
+#include "../lib/GlobalChecks.h"
+#include "../lib/marshal.h"
 
 namespace stellar
 {

@@ -4,15 +4,15 @@
 
 #include "Slot.h"
 
-#include "crypto/Hex.h"
-#include "lib/json/json.h"
-#include "main/ErrorMessages.h"
-#include "scp/LocalNode.h"
-#include "scp/QuorumSetUtils.h"
-#include "util/GlobalChecks.h"
-#include "util/Logging.h"
-#include "util/XDROperators.h"
-#include "xdrpp/marshal.h"
+#include "../lib/Hex.h"
+#include "../lib/json.h"
+#include "../lib/ErrorMessages.h"
+#include "LocalNode.h"
+#include "QuorumSetUtils.h"
+#include "../lib/GlobalChecks.h"
+#include "../lib/Logging.h"
+#include "../lib/XDROperators.h"
+#include "../lib/marshal.h"
 #include <ctime>
 #include <functional>
 
