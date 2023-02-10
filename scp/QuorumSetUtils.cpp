@@ -4,7 +4,7 @@
 
 #include "QuorumSetUtils.h"
 
-#include "util/XDROperators.h"
+#include "../lib/XDROperators.h"
 #include "../lib/Stellar-SCP.h"
 #include "../lib/Stellar-types.h"
 
