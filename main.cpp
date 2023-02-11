@@ -3,6 +3,8 @@
 #include <vector>
 #include <fstream>
 #include <bits/stdc++.h>
+#include "scp/LocalNode.h"
+#include "lib/SHA.h"
 
 using namespace std;
 
@@ -26,8 +28,29 @@ vector<string> vec_tokenizer(string s)
     return v;
 }
 
+//PublicKey makePublicKey(int i) {
+
+    // auto makePublicKey = [](int i) {
+    //     auto hash = sha256("NODE_SEED_" + std::to_string(i));
+    //     auto secretKey = SecretKey::fromSeed(hash);
+    //     return secretKey.getPublicKey();
+    // };
+
+    //hash = sha256("NODE_SEED_" + to_string(i));
+//}
+
 // reads input file of nodes and their slices into a node vec
 vector<node> parseInput(string filename) {
+
+    // todo: don't use auto
+    auto hash = stellar::sha256("NODE_SEED_" + std::to_string(4));
+    // REFERENCE: LocalNode(NodeID const& nodeID, bool isValidator, SCPQuorumSet const& qSet, SCPDriver& driver);
+    //NodeID nodeID = makePublicKey(4);
+    bool isValidator = false;
+    //SCPQuorumSet qSet =
+    //SCPDriver driver =
+    //LocalNode newNode(nodeID, isValidator, qSet, driver);
+
     // open file
     ifstream input_file;
     input_file.open(filename);
@@ -49,7 +72,7 @@ vector<node> parseInput(string filename) {
         getline(input_file, curr_slice_str);
 
         // build node using name string and slice vector
-        curr_node.name = curr_name; 
+        curr_node.name = curr_name;
         curr_node.slice = vec_tokenizer(curr_slice_str);
 
         // Add new node to the vector of nodes
@@ -67,6 +90,7 @@ vector<node> parseInput(string filename) {
 }
 
 int main() {
+    // Parse input file
     string filename = "node-input.txt";
     vector<node> node_vec = parseInput(filename);
 

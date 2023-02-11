@@ -1,8 +1,5 @@
 // -*- C++ -*-
 
-/** \file marshal.h Support for marshaling XDR types in the format
- * specified by [RFC4506](http://tools.ietf.org/html/rfc4506).
- */
 
 #ifndef _XDRPP_MARSHAL_H_HEADER_INCLUDED_
 #define _XDRPP_MARSHAL_H_HEADER_INCLUDED_ 1

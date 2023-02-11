@@ -11,7 +11,7 @@
 #include <memory>
 #include <set>
 
-//#include "xdr/Stellar-SCP.h"
+#include "../lib/Stellar-SCP.h"
 
 namespace stellar
 {
