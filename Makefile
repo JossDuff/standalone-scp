@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Wextra
 
 main.exe: main.o
 	$(CC) $(CFLAGS) -o main.exe main.o

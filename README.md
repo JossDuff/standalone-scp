@@ -10,7 +10,9 @@ https://doc.libsodium.org/installation
 need to install sodium
 
 # TODO
+ - copy over .cpp files associated with the .h files in lib/ when needed
  - node input file with slices and parser for that file
  - parse into nodes and qslices
+ - make parser more robust (check node names, error messages, etc.)
  - might not need SCPdriver.  Seems like it deals more with persistence in a live network than the actual consensus.
  - start actually coding and make a list of the issues/ things to solve
