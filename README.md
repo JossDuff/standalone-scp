@@ -1,13 +1,36 @@
 # standalone-scp
 Copied from https://github.com/stellar/stellar-core
 
-herder is example implementation of scp driver class from stellar-core.  We'll have to build our own implementation
+Herder is example implementation of scp driver class from stellar-core.  We MIGHT have to build our own implementation.
 
 https://github.com/bobg/scp
 example scp in go.  Will be a good reference
 
-https://doc.libsodium.org/installation
 need to install sodium
+
+# running
+Install sodium: https://doc.libsodium.org/installation
+
+If you run into errors with some core c++ packages you might need to update your include path.
+
+Run the following in `/standalone-scp`:
+`$ make`
+`$ ./main.exe`
+
+If you make changes to any files or want to re-compile:
+`$ make clean` will remove any `.o` & `.exe` files
+
+# node-input.txt
+This is the input file that defines the nodes and their trusted slices.
+Format is as follows:
+
+[node name]<br />
+[names of trusted nodes to be added to node's slice.  Space separated]<br />
+[empty line]<br />
+[node name]<br />
+[names of trusted nodes to be added to node's slice.  Space separated]<br />
+[empty line]<br />
+etc.
 
 # TODO
  - copy over .cpp files associated with the .h files in lib/ when needed
