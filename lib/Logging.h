@@ -7,6 +7,7 @@
 #include <array>
 #include <iostream>
 #include <map>
+#include <mutex>
 
 // Provide support for fmt-strings formatting objects that have
 // an overloaded operator<< defined on them.
