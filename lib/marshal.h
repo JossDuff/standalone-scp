@@ -5,7 +5,7 @@
 #define _XDRPP_MARSHAL_H_HEADER_INCLUDED_ 1
 
 #include <cstring>
-#include "endian.h"
+#include <endian.h>
 #include "message.h"
 #include "types.h"
 #include <iostream>

@@ -7,7 +7,7 @@ main.exe: main.o SHA.o
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
 
-SHA.o:
+SHA.o: 
 	$(CC) $(CFLAGS) -c lib/SHA.cpp
 
 clean:

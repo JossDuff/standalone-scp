@@ -37,5 +37,5 @@ etc.
  - parse into nodes and qslices
  - make parser more robust (check node names, error messages, etc.)
  - might not need SCPdriver.  Seems like it deals more with persistence in a live network than the actual consensus.
-  - Herder is example implementation of scp driver class from stellar-core.  We MIGHT have to build our own implementation.
+  - Herder is example implementation of scp driver class from stellar-core.  We MIGHT have to build our own implementation. 
  - start actually coding and make a list of the issues/ things to solve

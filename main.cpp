@@ -3,7 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <bits/stdc++.h>
-#include "scp/LocalNode.h"
+//#include "scp/LocalNode.h"
 #include "lib/SHA.h"
 
 using namespace std;
