@@ -4,7 +4,7 @@
 #include <fstream>
 #include <bits/stdc++.h>
 //#include "scp/LocalNode.h"
-#include "lib/SHA.h"
+//#include "lib/SHA.h"
 
 using namespace std;
 
@@ -28,16 +28,16 @@ vector<string> vec_tokenizer(string s)
     return v;
 }
 
-//PublicKey makePublicKey(int i) {
+// PublicKey makePublicKey(int i) {
 
-    // auto makePublicKey = [](int i) {
-    //     auto hash = sha256("NODE_SEED_" + std::to_string(i));
-    //     auto secretKey = SecretKey::fromSeed(hash);
-    //     return secretKey.getPublicKey();
-    // };
+//     auto makePublicKey = [](int i) {
+//         auto hash = sha256("NODE_SEED_" + std::to_string(i));
+//         auto secretKey = SecretKey::fromSeed(hash);
+//         return secretKey.getPublicKey();
+//     };
 
-    //hash = sha256("NODE_SEED_" + to_string(i));
-//}
+//     hash = sha256("NODE_SEED_" + to_string(i));
+// }
 
 // reads input file of nodes and their slices into a node vec
 vector<node> parseInput(string filename) {
