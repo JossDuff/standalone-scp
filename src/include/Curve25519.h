@@ -7,7 +7,7 @@
 #include "ByteSlice.h"
 #include "Logging.h"
 #include "Stellar-types.h"
-#include "format.h"
+#include <fmt/format.h>
 #include <functional>
 #include <sodium.h>
 
