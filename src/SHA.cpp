@@ -7,7 +7,7 @@
 #include "include/CryptoError.h"
 #include "include/Curve25519.h"
 #include "include/NonCopyable.h"
-#include "include/Tracy.hpp"
+#include <Tracy.hpp>
 #include <sodium.h>
 
 namespace stellar

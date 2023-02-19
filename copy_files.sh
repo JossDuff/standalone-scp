@@ -1,6 +1,6 @@
 #!/bin/bash
-
 # for running in the root file /standalone-scp/
+# TODO: resolve the strange <> include statements
 
 filename=$1
 GREETING="Lets copy dependencies of $filename!"
@@ -10,15 +10,26 @@ echo $GREETING
 filePath=$(find stellar-core -name "$filename")
 echo "Found path: " $filePath
 
-# copy file into src/include if .h, src/ if .cpp
+# find filenames of included files
+includedFiles=$(grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//')
+echo -e "Included files:\n$includedFiles"
+
+# file has .cpp extension, copy it into src/ and change include statements to be "include/"
 if [[ "${filename##*.}" == "cpp" ]]; then
-  echo "The file has the .cpp extension. Copying into src/"
-elif [[ "${filename##*.}" == "h" ]]; then
-  echo "The file has the .h extension. Copying into src/include/"
+    echo "Copying $filename into src/"
+    # copies the file into src/ and changes include statements to be "include/"
+    $(cp $filePath src/$filename && sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' src/$filename)
+# file has .h or .hpp extension, copy it into src/include/ and change include statements to remove the path
+elif [[ "${filename##*.}" == "h" || "${filename##*.}" == "hpp" ]]; then
+    echo "Copying $filename into src/include/"
+    # copies the file into src/include and changes include statements to remove the path
+    $(cp $filePath src/include/$filename && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
+# otherwise file invalid
 else
   echo "The file has a different extension (."${filename##*.}"). Exiting program."
   exit 1
 fi
+
 
 #
 # FIND
@@ -40,6 +51,9 @@ fi
 # GREP
 # finds included files of a given file
 
+# this removes the path and the ""s
+#modified, not tested: $ grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//'
+
 # $ grep -oP '^#include\s*\K"\S+"' stellar-core/src/crypto/SHA.cpp
 # output: 
 # "crypto/SHA.h"
@@ -57,9 +71,13 @@ fi
 # CP && SED
 # copies a file and then renames the #include statements in the copied version
 
+# this removes the entire path (for copying .h files that reference .h files)
 # $ cp original_file.cpp copied_file.cpp && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' copied_file.cpp
 # This works but doesn't change the statements in <>
 
+# this adds in "/include" (for copying .cpp files that reference .h files)
+# cp original_file.cpp copied_file.cpp && sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' copied_file.cpp
+# this one might not work idk
 
 
 ### PATTERN
