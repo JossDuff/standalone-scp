@@ -40,6 +40,10 @@ function copyIncluded {
                     echo "Copying $filename into src/include/"
                     # copies the file into src/include and changes include statements to remove the path
                     $(cp $filePath src/include/$filename && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
+                    # also find the .cpp files associated with the header file
+                    local cppFile = ${filename%%.*}.cpp
+                    copyIncluded $cppFile
+                    
                 # otherwise file invalid
                 else
                     echo "Unknown extension: $filename"
