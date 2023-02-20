@@ -6,8 +6,8 @@
 
 #include <string>
 #include <vector>
-#include "message.h"
-#include "types.h"
+#include <xdrpp/message.h>
+#include <xdrpp/types.h>
 
 namespace stellar
 {

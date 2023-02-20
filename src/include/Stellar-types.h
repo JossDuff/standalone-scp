@@ -1,11 +1,11 @@
 // -*- C++ -*-
-// Automatically generated from protocol-curr/xdr/Stellar-types.x.
+// Automatically generated from protocol-next/xdr/Stellar-types.x.
 // DO NOT EDIT or your changes may be overwritten
 
-#ifndef __XDR_PROTOCOL_CURR_XDR_STELLAR_TYPES_H_INCLUDED__
-#define __XDR_PROTOCOL_CURR_XDR_STELLAR_TYPES_H_INCLUDED__ 1
+#ifndef __XDR_PROTOCOL_NEXT_XDR_STELLAR_TYPES_H_INCLUDED__
+#define __XDR_PROTOCOL_NEXT_XDR_STELLAR_TYPES_H_INCLUDED__ 1
 
-#include "types.h"
+#include <xdrpp/types.h>
 
 namespace stellar {
 
@@ -630,6 +630,7 @@ template<> struct xdr_traits<::stellar::SignerKey> : xdr_traits_base {
 using Signature = xdr::opaque_vec<64>;
 using SignatureHint = xdr::opaque_array<4>;
 using NodeID = PublicKey;
+using AccountID = PublicKey;
 
 struct Curve25519Secret {
   xdr::opaque_array<32> key{};
@@ -745,4 +746,4 @@ template<> struct xdr_traits<::stellar::HmacSha256Mac>
 
 }
 
-#endif // !__XDR_PROTOCOL_CURR_XDR_STELLAR_TYPES_H_INCLUDED__
+#endif // !__XDR_PROTOCOL_NEXT_XDR_STELLAR_TYPES_H_INCLUDED__
