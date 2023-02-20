@@ -3,15 +3,15 @@
 # TODO: resolve the strange <> include statements
 
 startFile=$1
-copyIncluded $startFile
 
 function copyIncluded {
     #originFile is the argument passed into function call
     local originFile=$1
 
     # find the file path in stellar-core
-    local filePath=$(find stellar-core -name "$originFile")
-    
+    # TODO: this takes just the first result.  Figure out how to resolve multiple paths
+    local filePath=$(find stellar-core -name "$originFile" | head -n 1)
+
     # file not found
     if [[ -z "$filePath" ]]; then
       echo "$originFile not found"
@@ -20,7 +20,6 @@ function copyIncluded {
     else
         # find filenames of included files
         local includedFiles=$(grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//')
-        echo -e "Included files:\n$includedFiles"
 
         # includedFiles is empty
         if [ -z "$includedFiles" ]; then
@@ -28,33 +27,49 @@ function copyIncluded {
 
         # found #include files
         else
-            # repeat for all included files
-            for local filename in $includedFiles; do
-                # file has .cpp extension, copy it into src/ and change include statements to be "include/"
-                if [[ "${filename##*.}" == "cpp" ]]; then
-                    echo "Copying $filename into src/"
-                    # copies the file into src/ and changes include statements to be "include/"
-                    $(cp $filePath src/$filename && sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' src/$filename)
-                # file has .h or .hpp extension, copy it into src/include/ and change include statements to remove the path
-                elif [[ "${filename##*.}" == "h" || "${filename##*.}" == "hpp" ]]; then
-                    echo "Copying $filename into src/include/"
-                    # copies the file into src/include and changes include statements to remove the path
-                    $(cp $filePath src/include/$filename && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
-                    # also find the .cpp files associated with the header file
-                    local cppFile = ${filename%%.*}.cpp
-                    copyIncluded $cppFile
-                    
-                # otherwise file invalid
-                else
-                    echo "Unknown extension: $filename"
-                fi
+            echo -e "$originFile included files:\n$includedFiles"
 
-                # recursively call function
-                copyIncluded $filename
+            # repeat for all included files
+            local filename
+            for filename in $includedFiles; do
+                # find the file path in stellar-core
+                # TODO: this takes just the first result.  Figure out how to resolve multiple paths
+                local filePath=$(find stellar-core -name "$filename" | head -n 1)
+
+                # file not found
+                if [[ -z "$filePath" ]]; then
+                echo "$filename not found"
+
+                # file found
+                else
+                    # file has .cpp extension, copy it into src/ and change include statements to be "include/"
+                    if [[ "${filename##*.}" == "cpp" ]]; then
+                        echo "Copying $filename into src/"
+                        # copies the file into src/ and changes include statements to be "include/"
+                        $(cp $filePath src/) 
+                        $(sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' src/$filename)
+                    # file has .h or .hpp extension, copy it into src/include/ and change include statements to remove the path
+                    elif [[ "${filename##*.}" == "h" || "${filename##*.}" == "hpp" ]]; then
+                        echo "Copying $filename into src/include/"
+                        # copies the file into src/include and changes include statements to remove the path
+                        $(cp $filePath src/include/)
+                        $(sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
+                        # also find the .cpp files associated with the header file
+                        #copyIncluded ${filename%%.*}.cpp
+
+                    # otherwise file invalid
+                    else
+                        echo "Unknown extension: $filename"
+                    fi
+
+                    # recursively call function
+                    #copyIncluded $filename
+                fi
             done
         fi
     fi
 }
+copyIncluded $startFile
 
 echo "All done!"
 
@@ -82,7 +97,7 @@ echo "All done!"
 # finds included files of a given file
 
 # this removes the path and the ""s
-#modified, not tested: $ grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//'
+#modified: $ grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//'
 
 # $ grep -oP '^#include\s*\K"\S+"' stellar-core/src/crypto/SHA.cpp
 # output: 
