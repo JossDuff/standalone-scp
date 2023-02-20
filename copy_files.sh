@@ -4,6 +4,8 @@
 
 originFile=$1
 
+# TODO: figure out best way to do the rest of this recursively
+
 # find the file path in stellar-core
 filePath=$(find stellar-core -name "$originFile")
 if [[ -z "$filePath" ]]; then
