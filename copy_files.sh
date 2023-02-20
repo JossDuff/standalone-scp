@@ -54,8 +54,9 @@ function copyIncluded {
                         # copies the file into src/include and changes include statements to remove the path
                         $(cp $filePath src/include/)
                         $(sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
+
                         # also find the .cpp files associated with the header file
-                        #copyIncluded ${filename%%.*}.cpp
+                        copyIncluded ${filename%%.*}.cpp
 
                     # otherwise file invalid
                     else
@@ -63,7 +64,7 @@ function copyIncluded {
                     fi
 
                     # recursively call function
-                    #copyIncluded $filename
+                    copyIncluded $filename
                 fi
             done
         fi
