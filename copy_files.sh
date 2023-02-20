@@ -2,33 +2,39 @@
 # for running in the root file /standalone-scp/
 # TODO: resolve the strange <> include statements
 
-filename=$1
-GREETING="Lets copy dependencies of $filename!"
-echo $GREETING
+originFile=$1
 
 # find the file path in stellar-core
-filePath=$(find stellar-core -name "$filename")
-echo "Found path: " $filePath
+filePath=$(find stellar-core -name "$originFile")
+if [[ -z "$filePath" ]]; then
+  echo "File not found"
+  exit 1
+else
+  echo "File found: $filePath"
+fi
 
 # find filenames of included files
 includedFiles=$(grep -oP '^#include\s*"\K[^/]+/\K\S+' $filePath | sed 's/"$//')
 echo -e "Included files:\n$includedFiles"
 
-# file has .cpp extension, copy it into src/ and change include statements to be "include/"
-if [[ "${filename##*.}" == "cpp" ]]; then
-    echo "Copying $filename into src/"
-    # copies the file into src/ and changes include statements to be "include/"
-    $(cp $filePath src/$filename && sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' src/$filename)
-# file has .h or .hpp extension, copy it into src/include/ and change include statements to remove the path
-elif [[ "${filename##*.}" == "h" || "${filename##*.}" == "hpp" ]]; then
-    echo "Copying $filename into src/include/"
-    # copies the file into src/include and changes include statements to remove the path
-    $(cp $filePath src/include/$filename && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
-# otherwise file invalid
-else
-  echo "The file has a different extension (."${filename##*.}"). Exiting program."
-  exit 1
-fi
+# repeat for all included files
+for filename in $includedFiles; do
+    # file has .cpp extension, copy it into src/ and change include statements to be "include/"
+    if [[ "${filename##*.}" == "cpp" ]]; then
+        echo "Copying $filename into src/"
+        # copies the file into src/ and changes include statements to be "include/"
+        $(cp $filePath src/$filename && sed -i 's/#include\s*".*\/\([^"]*\)"/#include "include\/\1"/g' src/$filename)
+    # file has .h or .hpp extension, copy it into src/include/ and change include statements to remove the path
+    elif [[ "${filename##*.}" == "h" || "${filename##*.}" == "hpp" ]]; then
+        echo "Copying $filename into src/include/"
+        # copies the file into src/include and changes include statements to remove the path
+        $(cp $filePath src/include/$filename && sed -i 's/#include\s*"[^/]*\/\([^"]*\)"/#include "\1"/g' src/include/$filename)
+    # otherwise file invalid
+    else
+        echo "The file has a different extension (."${filename##*.}"). Exiting program."
+        exit 1
+    fi
+done
 
 
 #
