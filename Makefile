@@ -51,9 +51,9 @@ CORE_INCLUDES=-I $(CORE_DIR) \
 
 # What is -L?
 # remove ivy stuff
-executable: $(CORE_OBJS) executable.o
+main: $(CORE_OBJS) main.o
 	@echo "\n\ndon't forget to build stellar core with --disable-tests\n\n"
-	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -L $(IVY_LIBDIR) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -Wl,-rpath,$(IVY_LIBDIR) -o executable
+	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o executable
 	@echo "\n\ndon't forget to export LD_LIBRARY_PATH=$(IVY_LIBDIR)\n\n"
 
 # what is -I
@@ -61,12 +61,12 @@ executable: $(CORE_OBJS) executable.o
 # why is Makefile in here?
 # remove ivy stuff
 # what is $@ and $< 
-executable.o: executable.cpp executable.h Makefile
-	clang++ -c -O2 -g -std=c++17 -pthread $(CORE_INCLUDES) -I $(IVY_INCDIR) -o $@ $<
+main.o: main.cpp Makefile
+	clang++ -c -O2 -g -std=c++17 -pthread $(CORE_INCLUDES) -o $@ $<
 
 # I don't think I need this since we already have a c++ file
-executable.cpp executable.h: executable.ivy Makefile
-	ivy_to_cpp target=test isolate=executable_runner build=false $<
+# executable.cpp executable.h: executable.ivy Makefile
+# 	ivy_to_cpp target=test isolate=executable_runner build=false $<
 
 clean:
 	rm -f executable.o executable.cpp executable.h
