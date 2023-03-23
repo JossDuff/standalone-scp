@@ -1,10 +1,20 @@
-#include <string>
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <bits/stdc++.h>
+// #include <string>
+// #include <iostream>
+// #include <vector>
+// #include <fstream>
+// #include <bits/stdc++.h>
 //#include "scp/LocalNode.h"
 //#include "include/SHA.h"
+#define USE_SPDLOG // ??
+#include <crypto/Hex.h>
+#include <crypto/SecretKey.h>
+#include <crypto/SHA.h>
+#include <scp/SCP.h>
+#include <scp/Slot.h>
+#include <scp/QuorumSetUtils.h>
+#include <util/Logging.h>
+#include <util/XDROperators.h>
+#include <lib/json/json.h>
 
 using namespace std;
 
