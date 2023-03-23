@@ -49,18 +49,10 @@ CORE_INCLUDES=-I $(CORE_DIR) \
 # IVY_INCDIR=$(IVY_DIR)/ivy/include
 # IVY_LIBDIR=$(IVY_DIR)/ivy/lib
 
-# What is -L?
-# remove ivy stuff
-main: $(CORE_OBJS) main.o
+main.exe: $(CORE_OBJS) main.o
 	@echo "\n\ndon't forget to build stellar core with --disable-tests\n\n"
-	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o main
-	@echo "\n\ndon't forget to export LD_LIBRARY_PATH=$(IVY_LIBDIR)\n\n"
+	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o main.exe
 
-# what is -I
-# can I just change executable.cpp to main.cpp
-# why is Makefile in here?
-# remove ivy stuff
-# what is $@ and $< 
 main.o: main.cpp Makefile
 	clang++ -c -O2 -g -std=c++17 -pthread $(CORE_INCLUDES) -o $@ $<
 
@@ -69,6 +61,6 @@ main.o: main.cpp Makefile
 # 	ivy_to_cpp target=test isolate=executable_runner build=false $<
 
 clean:
-	rm -f executable.o executable.cpp executable.h
+	rm -f main.o main.exe
 
 .PHONY: clean
