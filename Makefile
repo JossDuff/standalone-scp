@@ -53,7 +53,7 @@ CORE_INCLUDES=-I $(CORE_DIR) \
 # remove ivy stuff
 main: $(CORE_OBJS) main.o
 	@echo "\n\ndon't forget to build stellar core with --disable-tests\n\n"
-	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o executable
+	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o main
 	@echo "\n\ndon't forget to export LD_LIBRARY_PATH=$(IVY_LIBDIR)\n\n"
 
 # what is -I

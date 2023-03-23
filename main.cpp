@@ -1,12 +1,16 @@
-// #include <string>
-// #include <iostream>
-// #include <vector>
-// #include <fstream>
-// #include <bits/stdc++.h>
+#include <string>
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <bits/stdc++.h>
 //#include "scp/LocalNode.h"
 //#include "include/SHA.h"
 #define USE_SPDLOG // ??
-// #include <crypto/Hex.h>
+// @DEV I had to change stellar-core/src/crypto/Hex.h line 8 from 
+    // #include "xdr/Stellar-types.h" 
+    // to
+    // #include "protocol-curr/xdr/Stellar-types.h"
+ #include <crypto/Hex.h>
 // #include <crypto/SecretKey.h>
 // #include <crypto/SHA.h>
 // #include <scp/SCP.h>
