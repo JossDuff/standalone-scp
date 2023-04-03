@@ -10,8 +10,9 @@
     // #include "xdr/Stellar-types.h" 
     // to
     // #include "protocol-curr/xdr/Stellar-types.h"
+    // UPDATE: I fixed this in the makefile.  THIS CHANGE ISN'T NEEDED ANYMORE
  #include <crypto/Hex.h>
-// #include <crypto/SecretKey.h>
+ #include <crypto/SecretKey.h>
 // #include <crypto/SHA.h>
 // #include <scp/SCP.h>
 // #include <scp/Slot.h>
@@ -41,6 +42,19 @@ vector<string> vec_tokenizer(string s)
     }
     cout << "\n";
     return v;
+}
+
+namespace stellar {
+    static xdr::xvector<NodeID>
+    initNodeIDs(unsigned n)
+    {
+        xdr::xvector<NodeID> nodes;
+        while (nodes.size() < n)
+        {
+            nodes.emplace_back(PubKeyUtils::random());
+        }
+        return nodes;
+    }
 }
 
 // PublicKey makePublicKey(int i) {

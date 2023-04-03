@@ -39,7 +39,8 @@ CORE_LIBDIRS=-L $(CORE_DIR)/lib \
              -L $(CORE_DIR)/lib/libsodium/src/libsodium/.libs
 
 CORE_INCLUDES=-I $(CORE_DIR) \
-              -I $(CORE_DIR)/src \
+              -I $(CORE_DIR)/src/ \
+              -I $(CORE_DIR)/src/protocol-curr/ \
               -I $(CORE_DIR)/lib/xdrpp \
               -I $(CORE_DIR)/lib/fmt/include \
               -I $(CORE_DIR)/lib/libsodium/src/libsodium/include \

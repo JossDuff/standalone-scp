@@ -39,6 +39,8 @@ etc.
 # notes
 
 ### `file not found` include error from stellar-core
+ * UPDATE: I fixed this in the makefile.  This change shouldn't be needed anymore.  Revert these changes if you've made them to stellar-core.
+
  When including files from `stellar-core` you sometimes might run into an error like this: 
  ```
  In file included from main.cpp:9:
