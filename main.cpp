@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
 #include <bits/stdc++.h>
 //#include "scp/LocalNode.h"
 //#include "include/SHA.h"
