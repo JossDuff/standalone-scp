@@ -11,7 +11,7 @@
     // to
     // #include "protocol-curr/xdr/Stellar-types.h"
     // UPDATE: I fixed this in the makefile.  THIS CHANGE ISN'T NEEDED ANYMORE
- #include <crypto/Hex.h>
+// #include <crypto/Hex.h>
  #include <crypto/SecretKey.h>
 // #include <crypto/SHA.h>
 // #include <scp/SCP.h>
@@ -24,9 +24,20 @@
 
 using namespace std;
 
+// TODO: I was working with a stuct like this for the initial attempt to keep
+// track of node names and names of the nodes in their slice.  This is going
+// to be un-maintainable as we work with more stellar-core types and functions.
+// Best way to keep track of the names and slices will be a mapping of the 
+// node's key (NodeID) to a name and to a vector of NodeID's of the nodes in 
+// its slice
 struct node {
+    // name of the node from node-input.txt
     string name;
+    // string of the names of trusted nodes from node-input.txt
+    // TODO: might want to change this to a Qset or some other type from stellar-core
     vector<string> slice;
+    // node public key
+    stellar::NodeID keyID;
 };
 
 // A quick way to split strings separated via spaces.
@@ -35,50 +46,17 @@ vector<string> vec_tokenizer(string s)
     vector<string> v;
     stringstream ss(s);
     string word;
-    cout << "slice: ";
+    //cout << "slice: ";
     while (ss >> word) {
         v.push_back(word);
-        cout << word + " ";
+        //cout << word + " ";
     }
-    cout << "\n";
+    //cout << "\n";
     return v;
 }
 
-namespace stellar {
-    static xdr::xvector<NodeID>
-    initNodeIDs(unsigned n)
-    {
-        xdr::xvector<NodeID> nodes;
-        while (nodes.size() < n)
-        {
-            nodes.emplace_back(PubKeyUtils::random());
-        }
-        return nodes;
-    }
-}
-
-// PublicKey makePublicKey(int i) {
-
-//     auto makePublicKey = [](int i) {
-//         auto hash = sha256("NODE_SEED_" + std::to_string(i));
-//         auto secretKey = SecretKey::fromSeed(hash);
-//         return secretKey.getPublicKey();
-//     };
-
-//     hash = sha256("NODE_SEED_" + to_string(i));
-// }
-
 // reads input file of nodes and their slices into a node vec
 vector<node> parseInput(string filename) {
-
-    // todo: don't use auto
-    //auto hash = stellar::sha256("NODE_SEED_" + std::to_string(4));
-    // REFERENCE: LocalNode(NodeID const& nodeID, bool isValidator, SCPQuorumSet const& qSet, SCPDriver& driver);
-    //NodeID nodeID = makePublicKey(4);
-    bool isValidator = false;
-    //SCPQuorumSet qSet =
-    //SCPDriver driver =
-    //LocalNode newNode(nodeID, isValidator, qSet, driver);
 
     // open file
     ifstream input_file;
@@ -95,7 +73,7 @@ vector<node> parseInput(string filename) {
 
         // get name
         getline(input_file, curr_name);
-        cout << "name: " + curr_name + "\n";
+        //cout << "name: " + curr_name + "\n";
 
         // get slice as string
         getline(input_file, curr_slice_str);
@@ -103,6 +81,7 @@ vector<node> parseInput(string filename) {
         // build node using name string and slice vector
         curr_node.name = curr_name;
         curr_node.slice = vec_tokenizer(curr_slice_str);
+        curr_node.keyID = stellar::PubKeyUtils::random(); // Generate random key
 
         // Add new node to the vector of nodes
         node_vec.push_back(curr_node);
@@ -122,6 +101,18 @@ int main() {
     // Parse input file
     string filename = "node-input.txt";
     vector<node> node_vec = parseInput(filename);
+
+    // TODO: move to a helper function file
+    cout << "PRINTING NODES AND TRUSTED SLICES (from node-input.txt) \n \n";
+    for (int i = 0; i < node_vec.size(); i++) {
+        node curr_node = node_vec[i];
+        cout << "Node:           " << curr_node.name << "\n";
+        cout << "Trusted slice:  ";
+        for (int j = 0; j < curr_node.slice.size(); j++) {
+            cout << curr_node.slice[j] << " ";
+        }
+        cout << "\n\n";
+    }
 
 
     return 0;
