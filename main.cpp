@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <map>
 #include <bits/stdc++.h>
 //#include "scp/LocalNode.h"
 //#include "include/SHA.h"
@@ -24,23 +25,15 @@
 
 using namespace std;
 
-// TODO: I was working with a stuct like this for the initial attempt to keep
-// track of node names and names of the nodes in their slice.  This is going
-// to be un-maintainable as we work with more stellar-core types and functions.
-// Best way to keep track of the names and slices will be a mapping of the 
-// node's key (NodeID) to a name and to a vector of NodeID's of the nodes in 
-// its slice
-struct node {
-    // name of the node from node-input.txt
-    string name;
-    // string of the names of trusted nodes from node-input.txt
-    // TODO: might want to change this to a Qset or some other type from stellar-core
-    vector<string> slice;
-    // node public key
-    stellar::NodeID keyID;
-};
+// Map of NodeID to name of the node
+map<stellar::NodeID, string> node_name_map;
+
+// Map of NodeID to vec of node's slice
+// TODO: there's probably a stellar type for the quorum slice, might not need this
+//map<stellar::NodeID, vector<stellar::NodeID>>
 
 // A quick way to split strings separated via spaces.
+// TODO: currently unused.  was being used to get the node's trusted slice
 vector<string> vec_tokenizer(string s)
 {
     vector<string> v;
@@ -56,17 +49,17 @@ vector<string> vec_tokenizer(string s)
 }
 
 // reads input file of nodes and their slices into a node vec
-vector<node> parseInput(string filename) {
+vector<stellar::NodeID> parseInput(string filename) {
 
     // open file
     ifstream input_file;
     input_file.open(filename);
 
     string curr_name;
+    stellar::NodeID curr_node;
+    vector<stellar::NodeID> node_vec;
+    // TODO: currently not used
     string curr_slice_str;
-    string buff;
-    node curr_node;
-    vector<node> node_vec;
 
     // run until End Of File is reached
     while(!input_file.eof()){
@@ -76,15 +69,17 @@ vector<node> parseInput(string filename) {
         //cout << "name: " + curr_name + "\n";
 
         // get slice as string
+        // TODO: currently not used
         getline(input_file, curr_slice_str);
 
         // build node using name string and slice vector
-        curr_node.name = curr_name;
-        curr_node.slice = vec_tokenizer(curr_slice_str);
-        curr_node.keyID = stellar::PubKeyUtils::random(); // Generate random key
+        curr_node = stellar::PubKeyUtils::random(); // Generate random key for the node
 
         // Add new node to the vector of nodes
         node_vec.push_back(curr_node);
+
+        // Add new node to the map
+        node_name_map[curr_node] = curr_name;
 
         // get a blank line
         // doesn't matter which string buffer is used because it'll get overwritten
@@ -100,20 +95,16 @@ vector<node> parseInput(string filename) {
 int main() {
     // Parse input file
     string filename = "node-input.txt";
-    vector<node> node_vec = parseInput(filename);
+    vector<stellar::NodeID> node_vec = parseInput(filename);
 
     // TODO: move to a helper function file
-    cout << "PRINTING NODES AND TRUSTED SLICES (from node-input.txt) \n \n";
-    for (int i = 0; i < node_vec.size(); i++) {
-        node curr_node = node_vec[i];
-        cout << "Node:           " << curr_node.name << "\n";
-        cout << "Trusted slice:  ";
-        for (int j = 0; j < curr_node.slice.size(); j++) {
-            cout << curr_node.slice[j] << " ";
-        }
-        cout << "\n\n";
-    }
+    cout << "Printing nodes\n";
+    map<stellar::NodeID, string>::iterator it = node_name_map.begin();
 
+    while (it != node_name_map.end()) {
+        cout << it->second << "\n";
+        ++it;
+    }
 
     return 0;
 }
