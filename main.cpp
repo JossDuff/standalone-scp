@@ -13,24 +13,18 @@
     // #include "protocol-curr/xdr/Stellar-types.h"
     // UPDATE: I fixed this in the makefile.  THIS CHANGE ISN'T NEEDED ANYMORE
 // #include <crypto/Hex.h>
- #include <crypto/SecretKey.h>
+#include <crypto/SecretKey.h>
 // #include <crypto/SHA.h>
-// #include <scp/SCP.h>
+#include <scp/SCP.h>
 // #include <scp/Slot.h>
 // #include <invariant/ConservationOfLumens.h>
-// #include <scp/QuorumSetUtils.h>
+#include <scp/QuorumSetUtils.h>
 // #include <util/Logging.h>
 // #include <util/XDROperators.h>
 // #include <lib/json/json.h>
 
 using namespace std;
 
-// Map of NodeID to name of the node
-map<stellar::NodeID, string> node_name_map;
-
-// Map of NodeID to vec of node's slice
-// TODO: there's probably a stellar type for the quorum slice, might not need this
-//map<stellar::NodeID, vector<stellar::NodeID>>
 
 // A quick way to split strings separated via spaces.
 // TODO: currently unused.  was being used to get the node's trusted slice
@@ -49,7 +43,7 @@ vector<string> vec_tokenizer(string s)
 }
 
 // reads input file of nodes and their slices into a node vec
-vector<stellar::NodeID> parseInput(string filename) {
+vector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string> *node_name_map) {
 
     // open file
     ifstream input_file;
@@ -79,7 +73,7 @@ vector<stellar::NodeID> parseInput(string filename) {
         node_vec.push_back(curr_node);
 
         // Add new node to the map
-        node_name_map[curr_node] = curr_name;
+        (*node_name_map)[curr_node] = curr_name;
 
         // get a blank line
         // doesn't matter which string buffer is used because it'll get overwritten
@@ -92,10 +86,30 @@ vector<stellar::NodeID> parseInput(string filename) {
     return node_vec;
 }
 
+// stellar::SCPQuorumSetPtr initQSet(vector<stellar::NodeID> const& nodes)
+// {
+//     vector<stellar::SCPQuorumSet> innerSets;
+//     auto qset = std::make_shared<stellar::SCPQuorumSet>((nodes.size())/2 + 1, nodes, innerSets);
+//     stellar::normalizeQSet(*qset);
+//     return qset;
+// }
+
+// Each node will have an instance of this class which contains the SCP state machine
+// and also is an SCPDriver which mediates communication between Ivy and that SCP.
+// class TestSCP : public SCPDriver {...}
+
 int main() {
+
+    // Map of NodeID to name of the node
+    map<stellar::NodeID, string> node_name_map;
+
+    // Map of NodeID to vec of node's slice
+    // TODO: there's probably a stellar type for the quorum slice, might not need this
+    //map<stellar::NodeID, vector<stellar::NodeID>>
+
     // Parse input file
     string filename = "node-input.txt";
-    vector<stellar::NodeID> node_vec = parseInput(filename);
+    vector<stellar::NodeID> node_vec = parseInput(filename, &node_name_map);
 
     // TODO: move to a helper function file
     cout << "Printing nodes\n";
@@ -105,6 +119,10 @@ int main() {
         cout << it->second << "\n";
         ++it;
     }
+
+    // Need a TestSCP instance for each node
+    // might also need a single network object
+
 
     return 0;
 }
