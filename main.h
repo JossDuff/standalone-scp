@@ -1,17 +1,38 @@
-// #include <crypto/Hex.h>
-// #include <crypto/SecretKey.h>
-// #include <crypto/SHA.h>
-// #include <scp/SCP.h>
-// #include <scp/Slot.h>
-// #include <scp/QuorumSetUtils.h>
-// #include <util/Logging.h>
-// #include <util/XDROperators.h>
-// #include <lib/json/json.h>
+// Stellar includes
+#include <crypto/Hex.h>
+#include <crypto/SecretKey.h>
+#include <crypto/SHA.h>
+#include <scp/SCP.h>
+#include <scp/Slot.h>
+#include <scp/QuorumSetUtils.h>
+#include <util/Logging.h>
+#include <util/XDROperators.h>
+#include <lib/json/json.h>
 
 // below is copied from reference-code/executable.h
 
 
 namespace stellar {
+
+    // There will be 1 instance of this Network object representing the network
+    // as a whole. We have to initialize this all in one (global) place so we can
+    // build a single QSet that contains all the NodeIDs. It's constant once
+    // initialized.
+    struct Network {
+        // The network has a fixed set of nodes.
+        const xdr::xvector<NodeID> mNodeIDs;
+
+        // The network has a single quorum set built on those nodes.
+        const SCPQuorumSetPtr mQSet;
+        const Hash mQSetHash;
+
+        // Envelopes are broadcast into a globally visible history which
+        // individual nodes advance their consumption of.
+        std::vector<SCPEnvelopeWrapperPtr> mBroadcastEnvelopes;
+
+        Network(const xdr::xvector<NodeID> node_vec);
+    };
+    
     // Each node will have an instance of this class which contains the SCP state machine
     // and also is an SCPDriver which mediates communication between Ivy and that SCP.
     //

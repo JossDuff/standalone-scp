@@ -5,33 +5,16 @@
 #include <map>
 #include <bits/stdc++.h>
 #include "main.h"
-//#include "scp/LocalNode.h"
-//#include "include/SHA.h"
+
 #define USE_SPDLOG // ??
-// @DEV I had to change stellar-core/src/crypto/Hex.h line 8 from 
-    // #include "xdr/Stellar-types.h" 
-    // to
-    // #include "protocol-curr/xdr/Stellar-types.h"
-    // UPDATE: I fixed this in the makefile.  THIS CHANGE ISN'T NEEDED ANYMORE
-// #include <crypto/Hex.h>
-#include <crypto/SecretKey.h>
-// #include <crypto/SHA.h>
-#include <scp/SCP.h>
-// #include <scp/Slot.h>
-// #include <invariant/ConservationOfLumens.h>
-#include <scp/QuorumSetUtils.h>
-// #include <util/Logging.h>
-// #include <util/XDROperators.h>
-// #include <lib/json/json.h>
 
 using namespace std;
 
-
 // A quick way to split strings separated via spaces.
 // TODO: currently unused.  was being used to get the node's trusted slice
-vector<string> vec_tokenizer(string s)
+xdr::xvector<string> vec_tokenizer(string s)
 {
-    vector<string> v;
+    xdr::xvector<string> v;
     stringstream ss(s);
     string word;
     //cout << "slice: ";
@@ -44,7 +27,7 @@ vector<string> vec_tokenizer(string s)
 }
 
 // reads input file of nodes and their slices into a node vec
-vector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string> *node_name_map) {
+static xdr::xvector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string> *node_name_map) {
 
     // open file
     ifstream input_file;
@@ -52,7 +35,7 @@ vector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string>
 
     string curr_name;
     stellar::NodeID curr_node;
-    vector<stellar::NodeID> node_vec;
+    xdr::xvector<stellar::NodeID> node_vec;
     // TODO: currently not used
     string curr_slice_str;
 
@@ -67,10 +50,10 @@ vector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string>
         // TODO: currently not used
         getline(input_file, curr_slice_str);
 
-        // build node using name string and slice vector
+        // build node using name string and slice xvector
         curr_node = stellar::PubKeyUtils::random(); // Generate random key for the node
 
-        // Add new node to the vector of nodes
+        // Add new node to the xvector of nodes
         node_vec.push_back(curr_node);
 
         // Add new node to the map
@@ -105,19 +88,35 @@ void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope)
     // Do nothing -- we don't bother with signatures in this model.
 }
 
-// TODO implement
 stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 {
-    // We support exactly 1 qset in this model.
+    // We support exactly 1 qset in this model. (TODO: are we sure about this?)
+    // TODO: How does it access gNetwork when it's uninitialized
     if (qSetHash != gNetwork->mQSetHash)
     {
-        using namespace stellar;
         setLocalLogPrefix();
-        CLOG_ERROR(SCP, "can't find qset hash {}", hexAbbrev(qSetHash));
+        cout<< "can't find qset hash {}" + hexAbbrev(qSetHash);
         throw std::runtime_error("can't find qset hash");
     }
     return gNetwork->mQSet;
 }
+
+// TODO: fix this to work for the trusted slice we set in node-input.txt
+stellar::SCPQuorumSetPtr initQSet(xdr::xvector<stellar::NodeID> const& nodes)
+{
+    xdr::xvector<stellar::SCPQuorumSet> innerSets;
+    auto qset = make_shared<stellar::SCPQuorumSet>((nodes.size())/2 + 1, nodes, innerSets);
+    normalizeQSet(*qset);
+    return qset;
+}
+
+// Network constructor
+stellar::Network::Network(const xdr::xvector<stellar::NodeID> node_vec)
+    :mNodeIDs(node_vec),
+    mQSet(initQSet(mNodeIDs)),
+    mQSetHash(stellar::xdrSha256(*mQSet))
+{}
+
 
 int main() {
 
@@ -126,20 +125,21 @@ int main() {
 
     // Map of NodeID to vec of node's slice
     // TODO: there's probably a stellar type for the quorum slice, might not need this
-    //map<stellar::NodeID, vector<stellar::NodeID>>
+    //map<stellar::NodeID, xdr::xvector<stellar::NodeID>>
 
     // Parse input file
     string filename = "node-input.txt";
-    vector<stellar::NodeID> node_vec = parseInput(filename, &node_name_map);
+    const xdr::xvector<stellar::NodeID> node_vec = parseInput(filename, &node_name_map);
 
     // TODO: move to a helper function file
     cout << "Printing nodes\n";
     map<stellar::NodeID, string>::iterator it = node_name_map.begin();
-
     while (it != node_name_map.end()) {
         cout << it->second << "\n";
         ++it;
     }
+
+    unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(node_vec);
 
     // Need a TestSCP instance for each node
     // might also need a single network object
