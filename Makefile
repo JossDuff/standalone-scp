@@ -54,7 +54,7 @@ main.exe: $(CORE_OBJS) main.o
 	@echo "\n\ndon't forget to build stellar core with --disable-tests\n\n"
 	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3 -o main.exe
 
-main.o: main.cpp Makefile
+main.o: main.cpp main.h Makefile
 	clang++ -c -O2 -g -std=c++17 -pthread $(CORE_INCLUDES) -o $@ $<
 
 # I don't think I need this since we already have a c++ file

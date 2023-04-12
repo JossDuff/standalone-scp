@@ -4,6 +4,7 @@
 #include <fstream>
 #include <map>
 #include <bits/stdc++.h>
+#include "main.h"
 //#include "scp/LocalNode.h"
 //#include "include/SHA.h"
 #define USE_SPDLOG // ??
@@ -97,6 +98,26 @@ vector<stellar::NodeID> parseInput(string filename, map<stellar::NodeID, string>
 // Each node will have an instance of this class which contains the SCP state machine
 // and also is an SCPDriver which mediates communication between Ivy and that SCP.
 // class TestSCP : public SCPDriver {...}
+
+
+void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope)
+{
+    // Do nothing -- we don't bother with signatures in this model.
+}
+
+// TODO implement
+stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
+{
+    // We support exactly 1 qset in this model.
+    if (qSetHash != gNetwork->mQSetHash)
+    {
+        using namespace stellar;
+        setLocalLogPrefix();
+        CLOG_ERROR(SCP, "can't find qset hash {}", hexAbbrev(qSetHash));
+        throw std::runtime_error("can't find qset hash");
+    }
+    return gNetwork->mQSet;
+}
 
 int main() {
 
