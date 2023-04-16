@@ -203,21 +203,42 @@ stellar::Network::Network(
 
 int main() {
 
-    // Parse input file
+    // node-input file to be parsed
     string filename = "node-input.txt";
-    const auto [node_vec, node_to_quorum, node_to_name] = parseInput(filename);
 
-    // Prints nodes
-    cout << "Printing nodes\n";
-    for(auto it = node_to_name.cbegin(); it != node_to_name.cend(); ++it)
-    {
+    // parse input into a tuple
+    tuple<
+        xdr::xvector<stellar::NodeID>,
+        map<stellar::NodeID, stellar::SCPQuorumSetPtr>,
+        map<stellar::NodeID, string>> 
+    result = parseInput(filename);
+
+    // unwraps result tuple
+    xdr::xvector<stellar::NodeID> node_vec = get<0>(result);
+    map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum = get<1>(result);
+    map<stellar::NodeID, string> node_to_name = get<2>(result);
+
+    // Prints nodes via node_to_name
+    cout << "Printing nodes via node_to_name mapping\n";
+    for(auto it = node_to_name.cbegin(); it != node_to_name.cend(); ++it) {
         cout << it->second << "\n";
     }
-    // map<stellar::NodeID, string>::iterator it = node_to_name.begin();
-    // while (it != node_to_name.end()) {
-    //     cout << it->second << "\n";
-    //     ++it;
-    // }
+
+    // Prints nodes via node_vec
+    cout << "\nPrinting nodes via node_vec\n";
+    for(stellar::NodeID i: node_vec) {
+        cout << node_to_name[i] << "\n";
+    }
+
+    cout << "\nPrinting quorum slices\n";
+    stellar::SCPQuorumSetPtr curr_quorum;
+    for(auto it = node_to_quorum.cbegin(); it != node_to_quorum.cend(); ++it) {
+        curr_quorum = it->second;
+        cout << "threshold: " << curr_quorum->threshold << "\n";
+        for(stellar::NodeID i: curr_quorum->validators) {
+            cout << "   " << node_to_name[i] << "\n";
+        }
+    }
 
     // TODO: change quorum map to also accept map of node to quorum
     unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(&node_vec, &node_to_quorum);
