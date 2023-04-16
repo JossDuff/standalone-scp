@@ -9,9 +9,6 @@
 #include <util/XDROperators.h>
 #include <lib/json/json.h>
 
-// below is copied from reference-code/executable.h
-
-
 namespace stellar {
 
     // There will be 1 instance of this Network object representing the network
@@ -22,15 +19,22 @@ namespace stellar {
         // The network has a fixed set of nodes.
         const xdr::xvector<NodeID> mNodeIDs;
 
-        // The network has a single quorum set built on those nodes.
+        /*
+        The reference code handles only one quorum set for the whole network like so:
         const SCPQuorumSetPtr mQSet;
+
+        but for our code we want to be able to handle multiple quorum sets, so we will have
+        a mapping of nodeIDs to quorum sets for that nodeID
+        */
+        std::map<NodeID, SCPQuorumSetPtr> mQSet;
+        
         const Hash mQSetHash;
 
         // Envelopes are broadcast into a globally visible history which
         // individual nodes advance their consumption of.
         std::vector<SCPEnvelopeWrapperPtr> mBroadcastEnvelopes;
 
-        Network(const xdr::xvector<NodeID> node_vec);
+        Network(const xdr::xvector<NodeID> *node_vec, const std::map<NodeID, SCPQuorumSetPtr> *node_quorum_map);
     };
     
     // Each node will have an instance of this class which contains the SCP state machine
