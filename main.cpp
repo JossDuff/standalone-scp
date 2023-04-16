@@ -23,30 +23,6 @@ using namespace std;
 */
 
 /*
-***FOR REFERENCE (from stellar-core)
-
-struct SCPQuorumSet {
-  uint32 threshold{};
-  xdr::xvector<NodeID> validators{};
-  xdr::xvector<SCPQuorumSet> innerSets{};
-
-  SCPQuorumSet() = default;
-  template<typename _threshold_T,
-           typename _validators_T,
-           typename _innerSets_T,
-           typename = typename
-           std::enable_if<std::is_constructible<uint32, _threshold_T>::value
-                          && std::is_constructible<xdr::xvector<NodeID>, _validators_T>::value
-                          && std::is_constructible<xdr::xvector<SCPQuorumSet>, _innerSets_T>::value
-                         >::type>
-  explicit SCPQuorumSet(_threshold_T &&_threshold,
-                        _validators_T &&_validators,
-                        _innerSets_T &&_innerSets)
-    : threshold(std::forward<_threshold_T>(_threshold)),
-      validators(std::forward<_validators_T>(_validators)),
-      innerSets(std::forward<_innerSets_T>(_innerSets)) {}
-};
-
 *** For reference (from executable.cpp)
 static SCPQuorumSetPtr
 initQSet(xdr::xvector<NodeID> const& nodes)
@@ -73,28 +49,28 @@ stellar::SCPQuorumSetPtr initQSet(xdr::xvector<stellar::NodeID> const& nodes) {
 
 // creates a vector of nodes in the quorum slice (TODO: includes the node who owns the slice??)
 // First node in the vector is the node who chose this slice
-xdr::xvector<stellar::NodeID> vec_tokenizer(
-    stellar::NodeID node, 
-    string quorum_str, 
-    map<stellar::NodeID, string> &node_name_map
-    )
-{
-    xdr::xvector<stellar::NodeID> quorum_vec;
-    // TODO: not sure if I need to add the node whos owns this slice to the vector, of if it is done in TestSCP initialization
-    quorum_vec.push_back(node);
+// xdr::xvector<stellar::NodeID> vec_tokenizer(
+//     stellar::NodeID node, 
+//     string quorum_str, 
+//     map<stellar::NodeID, string> &node_to_name
+//     )
+// {
+//     xdr::xvector<stellar::NodeID> quorum_vec;
+//     // TODO: not sure if I need to add the node whos owns this slice to the vector, of if it is done in TestSCP initialization
+//     quorum_vec.push_back(node);
 
-    stringstream ss(quorum_str);
-    string node_name;
-    stellar::NodeID curr_node;
-    while (ss >> node_name) {
-        // gets the nodeID of the current node name
-        // TODO: handle case when node_name doesn't yet exist in mapping
-        curr_node = node_name_map.at(node_name);
-        // Add the nodeID to the vector
-        quorum_vec.push_back(curr_node);
-    }
-    return quorum_vec;
-}
+//     stringstream ss(quorum_str);
+//     string node_name;
+//     stellar::NodeID curr_node;
+//     while (ss >> node_name) {
+//         // gets the nodeID of the current node name
+//         // TODO: handle case when node_name doesn't yet exist in mapping
+//         curr_node = name_to_node[node_name];
+//         // Add the nodeID to the vector
+//         quorum_vec.push_back(curr_node);
+//     }
+//     return quorum_vec;
+// }
 
 // reads input file of nodes and their slices into a node vec
 // returns a tuple of node vector, node->quorum mapping, and node->name mapping
@@ -108,21 +84,19 @@ parseInput(string filename) {
     ifstream input_file;
     input_file.open(filename);
 
-    // TODO: rename all this shit to make it more readable
-
     // return value: vector of nodes
     xdr::xvector<stellar::NodeID> node_vec;
     // return value: node->quorum mapping
-    map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_quorum_map;
+    map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum;
     // return value: node->name mapping
-    map<stellar::NodeID, string> node_name_map;
+    map<stellar::NodeID, string> node_to_name;
 
     // mapping to hold the node to the names of the nodes in it's quorum slice
-    map<stellar::NodeID, string> node_quorum_name_map;
+    map<stellar::NodeID, string> node_to_quorum_names;
 
     // mapping to associate the name of a node to it's node ID
     // Used when constructing quorum slice of a node
-    map<string, stellar::NodeID> name_node_map;
+    map<string, stellar::NodeID> name_to_node;
 
     string node_name;
     string quorum_str;
@@ -140,14 +114,14 @@ parseInput(string filename) {
         node_vec.push_back(new_node);
 
         // Add new node to the returned map node->name
-        node_name_map[new_node] = node_name;
+        node_to_name[new_node] = node_name;
 
         // Add new node to the name->node map
-        name_node_map[node_name] = new_node;
+        name_to_node[node_name] = new_node;
 
         // get quorum slice as string to be later converted to a qSet
         getline(input_file, quorum_str);
-        node_quorum_name_map[new_node] = quorum_str;
+        node_to_quorum_names[new_node] = quorum_str;
 
         // get a blank line
         // doesn't matter which string buffer is used because it'll get overwritten
@@ -161,37 +135,45 @@ parseInput(string filename) {
     for (stellar::NodeID i : node_vec) {
         // TODO: handle case when node isn't in this map
         // String of node names
-        quorum_nodes_str = node_quorum_name_map.at(i);
+        quorum_nodes_str = node_to_quorum_names.at(i);
         // vector of nodeIDs
-        quorum_nodes = vec_tokenizer(i, quorum_nodes_str, &node_name_map);
+
+        xdr::xvector<stellar::NodeID> quorum_vec;
+        // TODO: not sure if I need to add the node whos owns this slice to the vector, of if it is done in TestSCP initialization
+        quorum_vec.push_back(i);
+        stringstream ss(quorum_nodes_str);
+        string node_name;
+        stellar::NodeID curr_node;
+        // turns node name strings (space separated) into a vector of NodeID
+        while (ss >> node_name) {
+            // gets the nodeID of the current node name
+            // TODO: handle case when node_name doesn't yet exist in mapping
+            curr_node = name_to_node[node_name];
+            // Add the nodeID to the vector
+            quorum_vec.push_back(curr_node);
+        }
+
         // map of nodeID to Qset
-        node_quorum_map[i] = initQSet(quorum_nodes);
+        node_to_quorum[i] = initQSet(quorum_vec);
     }
 
     // close file
     input_file.close();
 
     // return tuple
-    return make_tuple(node_vec, node_quorum_map, node_name_map);
+    return make_tuple(node_vec, node_to_quorum, node_to_name);
 }
-
-// stellar::SCPQuorumSetPtr initQSet(vector<stellar::NodeID> const& nodes)
-// {
-//     vector<stellar::SCPQuorumSet> innerSets;
-//     auto qset = std::make_shared<stellar::SCPQuorumSet>((nodes.size())/2 + 1, nodes, innerSets);
-//     stellar::normalizeQSet(*qset);
-//     return qset;
-// }
 
 // Each node will have an instance of this class which contains the SCP state machine
 // and also is an SCPDriver which mediates communication between Ivy and that SCP.
 // class TestSCP : public SCPDriver {...}
-
-
+/*
 void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope)
 {
     // Do nothing -- we don't bother with signatures in this model.
 }
+*/
+
 /*
 stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 {
@@ -210,11 +192,12 @@ stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 // Network constructor
 stellar::Network::Network(
     const xdr::xvector<stellar::NodeID> *node_vec, 
-    const map<stellar::NodeID, stellar::SCPQuorumSetPtr> *node_quorum_map
+    const map<stellar::NodeID, stellar::SCPQuorumSetPtr> *node_to_quorum
 )
     :mNodeIDs(*node_vec),
-    mQSet(*node_quorum_map),
-    mQSetHash(stellar::xdrSha256(*mQSet))
+    mQSet(*node_to_quorum)
+    // TODO: might need this hash later
+    //mQSetHash(stellar::xdrSha256(*mQSet))
 {}
 
 
@@ -222,18 +205,22 @@ int main() {
 
     // Parse input file
     string filename = "node-input.txt";
-    const auto [node_vec, node_quorum_map, node_name_map] = parseInput(filename);
+    const auto [node_vec, node_to_quorum, node_to_name] = parseInput(filename);
 
     // Prints nodes
     cout << "Printing nodes\n";
-    map<stellar::NodeID, string>::iterator it = node_name_map.begin();
-    while (it != node_name_map.end()) {
+    for(auto it = node_to_name.cbegin(); it != node_to_name.cend(); ++it)
+    {
         cout << it->second << "\n";
-        ++it;
     }
+    // map<stellar::NodeID, string>::iterator it = node_to_name.begin();
+    // while (it != node_to_name.end()) {
+    //     cout << it->second << "\n";
+    //     ++it;
+    // }
 
     // TODO: change quorum map to also accept map of node to quorum
-    unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(&node_vec, &node_quorum_map);
+    unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(&node_vec, &node_to_quorum);
 
     // Need a TestSCP instance for each node
     // might also need a single network object

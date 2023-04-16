@@ -28,7 +28,8 @@ namespace stellar {
         */
         std::map<NodeID, SCPQuorumSetPtr> mQSet;
         
-        const Hash mQSetHash;
+        // TODO: might need this hash later
+        // const Hash mQSetHash;
 
         // Envelopes are broadcast into a globally visible history which
         // individual nodes advance their consumption of.
@@ -42,12 +43,15 @@ namespace stellar {
     //
     // NB: this class has to be called stellar__COLON____COLON__TestSCP exactly, to match a friend
     // declaration in SCP that allows us to access private members of SCP.
+
+    /*
     class TestSCP : public SCPDriver {
 
         SCP mSCP;
 
         // TODO: implement these functions
         void signEnvelope(SCPEnvelope& envelope) override;
+        
         SCPQuorumSetPtr getQSet(Hash const& qSetHash) override;
         void emitEnvelope(SCPEnvelope const& envelope) override;
         Hash getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const override;
@@ -65,37 +69,36 @@ namespace stellar {
         void acceptedCommit(uint64 slotIndex, SCPBallot const& ballot) override;
 
         // Thunks that can be set for callbacks from the SCP driver to Ivy.
-        /*
-        std::unique_ptr<thunk__node__value_externalized> mValueExternalizedCb;
-        std::unique_ptr<thunk__node__nominating_value> mNominatingValueCb;
-        std::unique_ptr<thunk__node__started_ballot_protocol> mStartedBallotProtocolCb;
-        std::unique_ptr<thunk__node__accepted_ballot_prepared> mAcceptedBallotPreparedCb;
-        std::unique_ptr<thunk__node__confirmed_ballot_prepared> mConfirmedBallotPreparedCb;
-        std::unique_ptr<thunk__node__accepted_commit> mAcceptedCommitCb;
-        std::unique_ptr<thunk__node__emit_envelope> mEmitEnvelopeCb;
-        std::unique_ptr<thunk__node__emit_prepare> mEmitPrepareCb;
-        std::unique_ptr<thunk__node__emit_confirm> mEmitConfirmCb;
-        std::unique_ptr<thunk__node__emit_externalize> mEmitExternalizeCb;
-        std::unique_ptr<thunk__node__emit_logical_vote_nominate> mEmitLogicalVoteNominateCb;
-        std::unique_ptr<thunk__node__emit_logical_accept_nominate> mEmitLogicalAcceptNominateCb;
-        */
+        
+        // std::unique_ptr<thunk__node__value_externalized> mValueExternalizedCb;
+        // std::unique_ptr<thunk__node__nominating_value> mNominatingValueCb;
+        // std::unique_ptr<thunk__node__started_ballot_protocol> mStartedBallotProtocolCb;
+        // std::unique_ptr<thunk__node__accepted_ballot_prepared> mAcceptedBallotPreparedCb;
+        // std::unique_ptr<thunk__node__confirmed_ballot_prepared> mConfirmedBallotPreparedCb;
+        // std::unique_ptr<thunk__node__accepted_commit> mAcceptedCommitCb;
+        // std::unique_ptr<thunk__node__emit_envelope> mEmitEnvelopeCb;
+        // std::unique_ptr<thunk__node__emit_prepare> mEmitPrepareCb;
+        // std::unique_ptr<thunk__node__emit_confirm> mEmitConfirmCb;
+        // std::unique_ptr<thunk__node__emit_externalize> mEmitExternalizeCb;
+        // std::unique_ptr<thunk__node__emit_logical_vote_nominate> mEmitLogicalVoteNominateCb;
+        // std::unique_ptr<thunk__node__emit_logical_accept_nominate> mEmitLogicalAcceptNominateCb;
+        
         public:
 
-        // TODO: gross inline comment. change later
-        TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal /*,
-        std::unique_ptr<thunk__node__value_externalized>,
-        std::unique_ptr<thunk__node__nominating_value>,
-        std::unique_ptr<thunk__node__started_ballot_protocol>,
-        std::unique_ptr<thunk__node__accepted_ballot_prepared>,
-        std::unique_ptr<thunk__node__confirmed_ballot_prepared>,
-        std::unique_ptr<thunk__node__accepted_commit>,
-        std::unique_ptr<thunk__node__emit_envelope>,
-        std::unique_ptr<thunk__node__emit_prepare>,
-        std::unique_ptr<thunk__node__emit_confirm>,
-        std::unique_ptr<thunk__node__emit_externalize>,
-        std::unique_ptr<thunk__node__emit_logical_vote_nominate>,
-        std::unique_ptr<thunk__node__emit_logical_accept_nominate>
-        */
+        // TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal,
+        // std::unique_ptr<thunk__node__value_externalized>,
+        // std::unique_ptr<thunk__node__nominating_value>,
+        // std::unique_ptr<thunk__node__started_ballot_protocol>,
+        // std::unique_ptr<thunk__node__accepted_ballot_prepared>,
+        // std::unique_ptr<thunk__node__confirmed_ballot_prepared>,
+        // std::unique_ptr<thunk__node__accepted_commit>,
+        // std::unique_ptr<thunk__node__emit_envelope>,
+        // std::unique_ptr<thunk__node__emit_prepare>,
+        // std::unique_ptr<thunk__node__emit_confirm>,
+        // std::unique_ptr<thunk__node__emit_externalize>,
+        // std::unique_ptr<thunk__node__emit_logical_vote_nominate>,
+        // std::unique_ptr<thunk__node__emit_logical_accept_nominate>
+        
         );
 
         SCP &getSCP() { return mSCP; }
@@ -111,5 +114,7 @@ namespace stellar {
             setLocalLogPrefix();
             return mapping(mSCP.getSlot(0, true)->getBallotProtocol().getJsonInfo()["phase"].asString());
         }
+        
     };
+    */
 }
