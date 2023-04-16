@@ -20,6 +20,8 @@ using namespace std;
             so main.cpp and main.h use the same namespace
         [] Currently doesn't support inner sets.  node-input parsing will have to be re-worked to support inner sets.
             Inner sets as whole networks might be the key to hierarchical consensus.
+        [] (maybe not needed) Support a custom threshold value of node-input.txt.  Currently it is majority.
+        [] Make parsing more robust.  Lotta issues.  play around with node-input until it breaks
 */
 
 /*
@@ -46,31 +48,6 @@ stellar::SCPQuorumSetPtr initQSet(xdr::xvector<stellar::NodeID> const& nodes) {
     normalizeQSet(*qset);
     return qset;
 }
-
-// creates a vector of nodes in the quorum slice (TODO: includes the node who owns the slice??)
-// First node in the vector is the node who chose this slice
-// xdr::xvector<stellar::NodeID> vec_tokenizer(
-//     stellar::NodeID node, 
-//     string quorum_str, 
-//     map<stellar::NodeID, string> &node_to_name
-//     )
-// {
-//     xdr::xvector<stellar::NodeID> quorum_vec;
-//     // TODO: not sure if I need to add the node whos owns this slice to the vector, of if it is done in TestSCP initialization
-//     quorum_vec.push_back(node);
-
-//     stringstream ss(quorum_str);
-//     string node_name;
-//     stellar::NodeID curr_node;
-//     while (ss >> node_name) {
-//         // gets the nodeID of the current node name
-//         // TODO: handle case when node_name doesn't yet exist in mapping
-//         curr_node = name_to_node[node_name];
-//         // Add the nodeID to the vector
-//         quorum_vec.push_back(curr_node);
-//     }
-//     return quorum_vec;
-// }
 
 // reads input file of nodes and their slices into a node vec
 // returns a tuple of node vector, node->quorum mapping, and node->name mapping
@@ -218,13 +195,11 @@ int main() {
     map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum = get<1>(result);
     map<stellar::NodeID, string> node_to_name = get<2>(result);
 
-    // Prints nodes via node_to_name
     cout << "Printing nodes via node_to_name mapping\n";
     for(auto it = node_to_name.cbegin(); it != node_to_name.cend(); ++it) {
         cout << it->second << "\n";
     }
 
-    // Prints nodes via node_vec
     cout << "\nPrinting nodes via node_vec\n";
     for(stellar::NodeID i: node_vec) {
         cout << node_to_name[i] << "\n";
@@ -232,9 +207,11 @@ int main() {
 
     cout << "\nPrinting quorum slices\n";
     stellar::SCPQuorumSetPtr curr_quorum;
+    stellar::NodeID curr_node;
     for(auto it = node_to_quorum.cbegin(); it != node_to_quorum.cend(); ++it) {
+        curr_node = it->first;
         curr_quorum = it->second;
-        cout << "threshold: " << curr_quorum->threshold << "\n";
+        cout << "Quorum slice for node: " << node_to_name[curr_node] << "\n";
         for(stellar::NodeID i: curr_quorum->validators) {
             cout << "   " << node_to_name[i] << "\n";
         }
