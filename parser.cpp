@@ -19,7 +19,6 @@
 
 using namespace std;
 
-
 // From reference code executable.cpp, but it's being used differently
 // in executable.cpp, this is called once to create a single quorum set for a network
 // in our model, we want to support many quorum sets for a network, so we call this for each node
