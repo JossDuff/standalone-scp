@@ -19,20 +19,51 @@
 
 using namespace std;
 
+/* format for node-input.txt
+
+NODE_NAME
+NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE
+
+NODE_NAME
+NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE
+
+NODE_NAME
+NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE NODE_IN_QUORUM_SLICE
+
+etc.
+First line is the name of the node (turned into a NodeID type), second line is the names of the 
+nodes in it's quorum slice (turned into a SCPQuorumSet type), and the third line is blank.
+*/
+
+
+/*
+    GENERAL TODOs
+        [] when accessing a mapping like "curr_node = name_to_node[node_name];" if the key node_name doesn't
+            yet exist in the mapping name_to_node it will create a new entry to the mapping.  We don't really
+            want this so maybe throw an error if this happens.
+        [] mess around with node-input.txt until you find some unexpected behavior.  Look at the printed output,
+            specifically with the "printing quorum slices" section because that is where the parser is weakest.
+        [] (later) If we eventually find the need to, modify the parser to support inner sets.  This would 
+            be a large change because we would have to change the format of node-input.txt
+
+*/
+
 // From reference code executable.cpp, but it's being used differently
 // in executable.cpp, this is called once to create a single quorum set for a network
 // in our model, we want to support many quorum sets for a network, so we call this for each node
 stellar::SCPQuorumSetPtr initQSet(xdr::xvector<stellar::NodeID> const& nodes) {
-    // TODO: support inner sets
+    // TODO: support inner sets (we don't need to do this yet so maybe wait)
     xdr::xvector<stellar::SCPQuorumSet> innerSets;
-    // TODO: confirm that the first parameter is the threshold of nodes that need to agree
+    // first argument: threshold of nodes needed to agree to a statement
+    // second argument: vector of nodeIDs that are in the nodes's quorum slice
+    // third argument: inner set is a nested quorum set
     auto qset = std::make_shared<stellar::SCPQuorumSet>((nodes.size())/2 + 1, nodes, innerSets);
     normalizeQSet(*qset);
     return qset;
 }
 
-// reads input file of nodes and their slices into a node vec
-// returns a tuple of node vector, node->quorum mapping, and node->name mapping
+// reads input file of nodes and their slices into a nodeID vec
+// returns a tuple of nodeID vector, nodeID->quorum mapping, and nodeID->name mapping
 tuple<
     xdr::xvector<stellar::NodeID>,
     map<stellar::NodeID, stellar::SCPQuorumSetPtr>,
@@ -43,17 +74,17 @@ parseInput(string filename) {
     ifstream input_file;
     input_file.open(filename);
 
-    // return value: vector of nodes
+    // return value: vector of nodeIDs
     xdr::xvector<stellar::NodeID> node_vec;
-    // return value: node->quorum mapping
+    // return value: nodeID->quorum mapping
     map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum;
-    // return value: node->name mapping
+    // return value: nodeID->name mapping
     map<stellar::NodeID, string> node_to_name;
 
-    // mapping to hold the node to the names of the nodes in it's quorum slice
+    // mapping to hold the nodeID to the names of the nodes in it's quorum slice
     map<stellar::NodeID, string> node_to_quorum_names;
 
-    // mapping to associate the name of a node to it's node ID
+    // mapping to associate the name of a node to it's nodeID
     // Used when constructing quorum slice of a node
     map<string, stellar::NodeID> name_to_node;
 
@@ -66,16 +97,17 @@ parseInput(string filename) {
 
         // get name
         getline(input_file, node_name);
-        // Generate new node by creating random key
+        // Generate new nodeID by creating random key
+        // NodeID type is just a public key
         new_node = stellar::PubKeyUtils::random(); 
 
-        // Add new node to the returned vector of nodes
+        // Add new nodeID to the returned vector of nodeIDs
         node_vec.push_back(new_node);
 
-        // Add new node to the returned map node->name
+        // Add new nodeID to the returned map nodeID->name
         node_to_name[new_node] = node_name;
 
-        // Add new node to the name->node map
+        // Add new node to the name->nodeID map
         name_to_node[node_name] = new_node;
 
         // get quorum slice as string to be later converted to a qSet
@@ -87,18 +119,18 @@ parseInput(string filename) {
         getline(input_file, node_name);
     }
 
-    // loop through node vector and construct qSet for each node
+    // loop through nodeID vector and construct qSet for each node
     // This has to be done after to make sure we discovered all the nodes in node-input.txt
     xdr::xvector<stellar::NodeID> quorum_nodes;
     string quorum_nodes_str;
     for (stellar::NodeID i : node_vec) {
-        // TODO: handle case when node isn't in this map
+        // TODO: handle case when a nodeID isn't in this map
         // String of node names
         quorum_nodes_str = node_to_quorum_names.at(i);
         // vector of nodeIDs
 
         xdr::xvector<stellar::NodeID> quorum_vec;
-        // TODO: not sure if I need to add the node whos owns this slice to the vector, of if it is done in TestSCP initialization
+        // TODO: not sure if I need to add the node whos owns this slice to the vector, or if it is done in TestSCP initialization
         quorum_vec.push_back(i);
         stringstream ss(quorum_nodes_str);
         string node_name;

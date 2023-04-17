@@ -76,7 +76,7 @@ parser.o: parser.cpp parser.h Makefile
 
 # Define cleanup target
 clean:
-	rm -f $(CORE_OBJS) main.o parser.o $(TARGET)
+	rm main.o parser.o main.exe
 
 
 .PHONY: clean

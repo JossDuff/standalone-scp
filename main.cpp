@@ -25,21 +25,6 @@ using namespace std;
         [] Make parsing more robust.  Lotta issues.  play around with node-input until it breaks
 */
 
-/*
-*** For reference (from executable.cpp)
-static SCPQuorumSetPtr
-initQSet(xdr::xvector<NodeID> const& nodes)
-{
-    xdr::xvector<SCPQuorumSet> innerSets;
-    auto qset = std::make_shared<SCPQuorumSet>((nodes.size())/2 + 1, nodes, innerSets);
-    normalizeQSet(*qset);
-    return qset;
-}
-
-*/
-
-
-
 
 // Each node will have an instance of this class which contains the SCP state machine
 // and also is an SCPDriver which mediates communication between Ivy and that SCP.
