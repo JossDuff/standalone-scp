@@ -120,12 +120,22 @@ int main() {
         }
     }
 
+    cout << "1\n";
     unique_ptr<stellar::Network> gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
 
-
+    cout << "2\n";
     const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
+    cout << "3\n";
     const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
+    cout << "4\n";
     unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
+    cout << "5\n";
+    unique_ptr<stellar::TestSCP> testSCP[node_vec.size()];
+
+    for (int i = 0; i < node_vec.size(); i++) {
+        cout << "i: " << i;
+        testSCP[i] = make_unique<stellar::TestSCP>(gNetwork->mNodeIDs[i], *gNetwork->mQSet.at(gNetwork->mNodeIDs[i]));
+    }
 
 
     return 0;
