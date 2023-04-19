@@ -122,7 +122,10 @@ int main() {
 
     unique_ptr<stellar::Network> gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
 
-    unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(node_vec[0], node_to_quorum.at(node_vec[0]));
+
+    const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
+    const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
+    unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
 
 
     return 0;
