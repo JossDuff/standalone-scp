@@ -37,6 +37,24 @@ namespace stellar {
 
         Network(const xdr::xvector<NodeID> *node_vec, const std::map<NodeID, SCPQuorumSetPtr> *node_quorum_map);
     };
+
+    class TestSCP : public SCPDriver {
+        SCP mSCP;
+
+        // pure virtual functions that have to have an implementation
+        void signEnvelope(SCPEnvelope& envelope) override;
+        SCPQuorumSetPtr getQSet(Hash const& qSetHash) override;
+        void emitEnvelope(SCPEnvelope const& envelope) override;
+        Hash getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const override;
+        ValueWrapperPtr combineCandidates(uint64 slotIndex, ValueWrapperPtrSet const& candidates) override;
+        void setupTimer(uint64 slotIndex, int timerID, std::chrono::milliseconds timeout, std::function<void()> cb) override;
+        void stopTimer(uint64 slotIndex, int timerID) override;
+
+        public:
+        TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal);
+        SCP &getSCP() { return mSCP; }
+
+    };
     
     // Each node will have an instance of this class which contains the SCP state machine
     // and also is an SCPDriver which mediates communication between Ivy and that SCP.

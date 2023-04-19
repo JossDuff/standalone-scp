@@ -52,6 +52,9 @@ stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 */
 
 // Network constructor
+// In reference code, constructor just takes an integer and creates 
+// that many nodes as well as a single quorum set for those node.
+// In our model, we have a dynamic amount of nodes and quorum sets
 stellar::Network::Network(
     const xdr::xvector<stellar::NodeID> *node_vec, 
     const map<stellar::NodeID, stellar::SCPQuorumSetPtr> *node_to_quorum
@@ -61,6 +64,21 @@ stellar::Network::Network(
     // TODO: might need this hash later
     //mQSetHash(stellar::xdrSha256(*mQSet))
 {}
+
+// TestSCP constructor
+stellar::TestSCP::TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal)
+    // third arg is if node is validator or not
+    : mSCP(*this, nodeID, true, qSetLocal) {};
+
+
+// TODO: implement
+void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope) {}
+stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash) {}
+void stellar::TestSCP::emitEnvelope(SCPEnvelope const& envelope) {}
+stellar::Hash stellar::TestSCP::getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const {} // Compiler wouldn't accept without "const" here
+stellar::ValueWrapperPtr stellar::TestSCP::combineCandidates(uint64 slotIndex, ValueWrapperPtrSet const& candidates) {}
+void stellar::TestSCP::setupTimer(uint64 slotIndex, int timerID, std::chrono::milliseconds timeout, std::function<void()> cb) {}
+void stellar::TestSCP::stopTimer(uint64 slotIndex, int timerID) {}
 
 
 int main() {
@@ -102,11 +120,9 @@ int main() {
         }
     }
 
-    // TODO: change quorum map to also accept map of node to quorum
-    unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(&node_vec, &node_to_quorum);
+    unique_ptr<stellar::Network> gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
 
-    // Need a TestSCP instance for each node
-    // might also need a single network object
+    unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(node_vec[0], node_to_quorum.at(node_vec[0]));
 
 
     return 0;
