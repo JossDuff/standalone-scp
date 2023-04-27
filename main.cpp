@@ -2,118 +2,111 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <sstream>
+#include <map>
 #include <bits/stdc++.h>
-//#include "scp/LocalNode.h"
-//#include "include/SHA.h"
+#include <tuple>
+#include "main.h"
+#include "parser.h"
+
 #define USE_SPDLOG // ??
-// @DEV I had to change stellar-core/src/crypto/Hex.h line 8 from 
-    // #include "xdr/Stellar-types.h" 
-    // to
-    // #include "protocol-curr/xdr/Stellar-types.h"
-    // UPDATE: I fixed this in the makefile.  THIS CHANGE ISN'T NEEDED ANYMORE
-// #include <crypto/Hex.h>
- #include <crypto/SecretKey.h>
-// #include <crypto/SHA.h>
-// #include <scp/SCP.h>
-// #include <scp/Slot.h>
-// #include <invariant/ConservationOfLumens.h>
-// #include <scp/QuorumSetUtils.h>
-// #include <util/Logging.h>
-// #include <util/XDROperators.h>
-// #include <lib/json/json.h>
 
 using namespace std;
 
-// TODO: I was working with a stuct like this for the initial attempt to keep
-// track of node names and names of the nodes in their slice.  This is going
-// to be un-maintainable as we work with more stellar-core types and functions.
-// Best way to keep track of the names and slices will be a mapping of the 
-// node's key (NodeID) to a name and to a vector of NodeID's of the nodes in 
-// its slice
-struct node {
-    // name of the node from node-input.txt
-    string name;
-    // string of the names of trusted nodes from node-input.txt
-    // TODO: might want to change this to a Qset or some other type from stellar-core
-    vector<string> slice;
-    // node public key
-    stellar::NodeID keyID;
-};
+/*
+    GENERAL TODO:
+        [] change pointers to smart/unique pointers where appropriate 
+        [] move pasrsing functions into their own file.  This will require some makefile refactoring
+        [] using namespace std here because I figured it would be better to be explicit about which types are from stellar
+            this might not be very readable though, and also confusing since main.h uses namespace stellar.  Resolve this
+            so main.cpp and main.h use the same namespace
+        [] Currently doesn't support inner sets.  node-input parsing will have to be re-worked to support inner sets.
+            Inner sets as whole networks might be the key to hierarchical consensus.
+        [] (maybe not needed) Support a custom threshold value of node-input.txt.  Currently it is majority.
+        [] Make parsing more robust.  Lotta issues.  play around with node-input until it breaks
+*/
 
-// A quick way to split strings separated via spaces.
-vector<string> vec_tokenizer(string s)
+
+// Each node will have an instance of this class which contains the SCP state machine
+// and also is an SCPDriver which mediates communication between Ivy and that SCP.
+// class TestSCP : public SCPDriver {...}
+/*
+void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope)
 {
-    vector<string> v;
-    stringstream ss(s);
-    string word;
-    //cout << "slice: ";
-    while (ss >> word) {
-        v.push_back(word);
-        //cout << word + " ";
-    }
-    //cout << "\n";
-    return v;
+    // Do nothing -- we don't bother with signatures in this model.
 }
+*/
 
-// reads input file of nodes and their slices into a node vec
-vector<node> parseInput(string filename) {
-
-    // open file
-    ifstream input_file;
-    input_file.open(filename);
-
-    string curr_name;
-    string curr_slice_str;
-    string buff;
-    node curr_node;
-    vector<node> node_vec;
-
-    // run until End Of File is reached
-    while(!input_file.eof()){
-
-        // get name
-        getline(input_file, curr_name);
-        //cout << "name: " + curr_name + "\n";
-
-        // get slice as string
-        getline(input_file, curr_slice_str);
-
-        // build node using name string and slice vector
-        curr_node.name = curr_name;
-        curr_node.slice = vec_tokenizer(curr_slice_str);
-        curr_node.keyID = stellar::PubKeyUtils::random(); // Generate random key
-
-        // Add new node to the vector of nodes
-        node_vec.push_back(curr_node);
-
-        // get a blank line
-        // doesn't matter which string buffer is used because it'll get overwritten
-        getline(input_file, curr_name);
+/*
+stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
+{
+    // We support exactly 1 qset in this model. (TODO: are we sure about this?)
+    // TODO: How does it access gNetwork when it's uninitialized
+    if (qSetHash != gNetwork->mQSetHash)
+    {
+        setLocalLogPrefix();
+        cout<< "can't find qset hash {}" + hexAbbrev(qSetHash);
+        throw std::runtime_error("can't find qset hash");
     }
-
-    // close file
-    input_file.close();
-
-    return node_vec;
+    return gNetwork->mQSet;
 }
+*/
+
+// Network constructor
+stellar::Network::Network(
+    const xdr::xvector<stellar::NodeID> *node_vec, 
+    const map<stellar::NodeID, stellar::SCPQuorumSetPtr> *node_to_quorum
+)
+    :mNodeIDs(*node_vec),
+    mQSet(*node_to_quorum)
+    // TODO: might need this hash later
+    //mQSetHash(stellar::xdrSha256(*mQSet))
+{}
+
 
 int main() {
-    // Parse input file
-    string filename = "node-input.txt";
-    vector<node> node_vec = parseInput(filename);
 
-    // TODO: move to a helper function file
-    cout << "PRINTING NODES AND TRUSTED SLICES (from node-input.txt) \n \n";
-    for (int i = 0; i < node_vec.size(); i++) {
-        node curr_node = node_vec[i];
-        cout << "Node:           " << curr_node.name << "\n";
-        cout << "Trusted slice:  ";
-        for (int j = 0; j < curr_node.slice.size(); j++) {
-            cout << curr_node.slice[j] << " ";
-        }
-        cout << "\n\n";
+    // node-input file to be parsed
+    string filename = "node-input.txt";
+
+    // parse input into a tuple
+    tuple<
+        xdr::xvector<stellar::NodeID>,
+        map<stellar::NodeID, stellar::SCPQuorumSetPtr>,
+        map<stellar::NodeID, string>> 
+    result = parseInput(filename);
+
+    // unwraps result tuple
+    xdr::xvector<stellar::NodeID> node_vec = get<0>(result);
+    map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum = get<1>(result);
+    map<stellar::NodeID, string> node_to_name = get<2>(result);
+
+    cout << "Printing nodes via node_to_name mapping\n";
+    for(auto it = node_to_name.cbegin(); it != node_to_name.cend(); ++it) {
+        cout << it->second << "\n";
     }
+
+    cout << "\nPrinting nodes via node_vec\n";
+    for(stellar::NodeID i: node_vec) {
+        cout << node_to_name[i] << "\n";
+    }
+
+    cout << "\nPrinting quorum slices\n";
+    stellar::SCPQuorumSetPtr curr_quorum;
+    stellar::NodeID curr_node;
+    for(auto it = node_to_quorum.cbegin(); it != node_to_quorum.cend(); ++it) {
+        curr_node = it->first;
+        curr_quorum = it->second;
+        cout << "Quorum slice for node: " << node_to_name[curr_node] << "\n";
+        for(stellar::NodeID i: curr_quorum->validators) {
+            cout << "   " << node_to_name[i] << "\n";
+        }
+    }
+
+    // TODO: change quorum map to also accept map of node to quorum
+    unique_ptr<stellar::Network> gNetwork = std::make_unique<stellar::Network>(&node_vec, &node_to_quorum);
+
+    // Need a TestSCP instance for each node
+    // might also need a single network object
 
 
     return 0;

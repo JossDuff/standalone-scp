@@ -46,22 +46,37 @@ CORE_INCLUDES=-I $(CORE_DIR) \
               -I $(CORE_DIR)/lib/libsodium/src/libsodium/include \
               -I $(CORE_DIR)/lib/spdlog/include
 
-# use Ivy's version of z3
-# IVY_INCDIR=$(IVY_DIR)/ivy/include
-# IVY_LIBDIR=$(IVY_DIR)/ivy/lib
+# Define compiler flags
+CXXFLAGS := -O2 -g -std=c++17 -pthread $(CORE_INCLUDES)
 
-main.exe: $(CORE_OBJS) main.o
+# Define linker flags
+LDFLAGS := $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3
+
+# Define target executable
+TARGET := main.exe
+
+# Define source files
+SRCS := main.cpp parser.cpp
+
+# Define header files
+HDRS := main.h parser.h
+
+# Define build targets
+all: $(TARGET)
+
+$(TARGET): $(CORE_OBJS) main.o parser.o
 	@echo "\n\ndon't forget to build stellar core with --disable-tests\n\n"
-	clang++ -g -o $@ $^ $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -o main.exe
+	clang++ -g -o $@ $^ $(LDFLAGS)
 
-main.o: main.cpp Makefile
-	clang++ -c -O2 -g -std=c++17 -pthread $(CORE_INCLUDES) -o $@ $<
+main.o: main.cpp $(HDRS) Makefile
+	clang++ -c $(CXXFLAGS) -o $@ $<
 
-# I don't think I need this since we already have a c++ file
-# executable.cpp executable.h: executable.ivy Makefile
-# 	ivy_to_cpp target=test isolate=executable_runner build=false $<
+parser.o: parser.cpp parser.h Makefile
+	clang++ -c $(CXXFLAGS) -o $@ $<
 
+# Define cleanup target
 clean:
-	rm -f main.o main.exe
+	rm main.o parser.o main.exe
+
 
 .PHONY: clean
