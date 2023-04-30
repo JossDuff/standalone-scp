@@ -51,6 +51,19 @@ stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 }
 */
 
+// create a vector of Hashes from all of the SCPQuorumSetPtrs (do I need to dereference SCPQuorumSetPtr)
+const xdr::xvector<stellar::Hash> computeQSetHash(const std::map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum) {
+    xdr::xvector<stellar::Hash> hashes;
+    stellar::Hash curr_hash;
+    for (const auto& [curr_NodeID, curr_SCPQuorumSetPtr] : node_to_quorum)
+    {
+        curr_hash = stellar::xdrSha256(*curr_SCPQuorumSetPtr);
+        hashes.push_back(curr_hash);
+    }
+
+    return hashes;
+}
+
 // Network constructor
 // In reference code, constructor just takes an integer and creates 
 // that many nodes as well as a single quorum set for those node.
@@ -60,9 +73,11 @@ stellar::Network::Network(
     const map<stellar::NodeID, stellar::SCPQuorumSetPtr> *node_to_quorum
 )
     :mNodeIDs(*node_vec),
-    mQSet(*node_to_quorum)
-    // TODO: might need this hash later
-    //mQSetHash(stellar::xdrSha256(*mQSet))
+    mQSet(*node_to_quorum),
+    // TODO: function to make a hash of a map
+    // This will have to be an array or map for us, since reference-code model deals with only one qSet and ours
+    // handles any amount of qSets
+    mQSetHash(computeQSetHash(mQSet))
 {}
 
 // TestSCP constructor
@@ -73,6 +88,7 @@ stellar::TestSCP::TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal)
 
 // TODO: implement
 void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope) {}
+// TODO: our implementation of Q Set will need to iterate over all the qSets and compare all hashes
 stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash) {}
 void stellar::TestSCP::emitEnvelope(SCPEnvelope const& envelope) {}
 stellar::Hash stellar::TestSCP::getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const {} // Compiler wouldn't accept without "const" here
@@ -120,15 +136,31 @@ int main() {
         }
     }
 
+    // Setting up stellar logging
+    stellar::Logging::init();
+    stellar::Logging::setLoggingColor(true);
+    stellar::Logging::setLogLevel(stellar::LogLevel::LVL_TRACE, "SCP");
+
     cout << "1\n";
     unique_ptr<stellar::Network> gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
+    cout << "1.5\n";
+    cout << (gNetwork ? "true" : "false") << "\n";
+    cout << (!gNetwork->mNodeIDs.empty() ? "true" : "false") << "\n";
+    cout << (!gNetwork->mQSet.empty() ? "true" : "false") << "\n";
 
-    cout << "2\n";
-    const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
-    cout << "3\n";
-    const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
-    cout << "4\n";
-    unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
+    if(gNetwork && !gNetwork->mNodeIDs.empty() && !gNetwork->mQSet.empty()){
+
+        cout << "2\n";
+        const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
+        cout << "3\n";
+        const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
+        cout << "4\n";
+        unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
+
+    }
+    else {
+        cout << "Invalid gNetwork object\n";
+    }
     cout << "5\n";
     unique_ptr<stellar::TestSCP> testSCP[node_vec.size()];
 

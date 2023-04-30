@@ -28,8 +28,11 @@ namespace stellar {
         */
         std::map<NodeID, SCPQuorumSetPtr> mQSet;
         
-        // TODO: might need this hash later
-        // const Hash mQSetHash;
+        // reference-code handles only a single qSet, but since we want to be able to handle a dynamic amount of
+        // qSets, we have to handle multiple Hashes
+        // TODO: should this be a mapping SCPQuorumSetPtr->Hash or NodeID->Hash
+        // TODO: should this be an array or mapping?
+        const xdr::xvector<Hash> mQSetHash;
 
         // Envelopes are broadcast into a globally visible history which
         // individual nodes advance their consumption of.
