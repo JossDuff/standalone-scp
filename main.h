@@ -28,14 +28,35 @@ namespace stellar {
         */
         std::map<NodeID, SCPQuorumSetPtr> mQSet;
         
-        // TODO: might need this hash later
-        // const Hash mQSetHash;
+        // reference-code handles only a single qSet, but since we want to be able to handle a dynamic amount of
+        // qSets, we have to handle multiple Hashes
+        // TODO: should this be a mapping SCPQuorumSetPtr->Hash or NodeID->Hash
+        // TODO: should this be an array or mapping?
+        const xdr::xvector<Hash> mQSetHash;
 
         // Envelopes are broadcast into a globally visible history which
         // individual nodes advance their consumption of.
         std::vector<SCPEnvelopeWrapperPtr> mBroadcastEnvelopes;
 
         Network(const xdr::xvector<NodeID> *node_vec, const std::map<NodeID, SCPQuorumSetPtr> *node_quorum_map);
+    };
+
+    class TestSCP : public SCPDriver {
+        SCP mSCP;
+
+        // pure virtual functions that have to have an implementation
+        void signEnvelope(SCPEnvelope& envelope) override;
+        SCPQuorumSetPtr getQSet(Hash const& qSetHash) override;
+        void emitEnvelope(SCPEnvelope const& envelope) override;
+        Hash getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const override;
+        ValueWrapperPtr combineCandidates(uint64 slotIndex, ValueWrapperPtrSet const& candidates) override;
+        void setupTimer(uint64 slotIndex, int timerID, std::chrono::milliseconds timeout, std::function<void()> cb) override;
+        void stopTimer(uint64 slotIndex, int timerID) override;
+
+        public:
+        TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal);
+        SCP &getSCP() { return mSCP; }
+
     };
     
     // Each node will have an instance of this class which contains the SCP state machine

@@ -47,7 +47,7 @@ CORE_INCLUDES=-I $(CORE_DIR) \
               -I $(CORE_DIR)/lib/spdlog/include
 
 # Define compiler flags
-CXXFLAGS := -O2 -g -std=c++17 -pthread $(CORE_INCLUDES)
+CXXFLAGS := -O2 -g -std=c++17 -pthread -Wall $(CORE_INCLUDES)
 
 # Define linker flags
 LDFLAGS := $(CORE_LIBDIRS) -lpthread -lsodium -l3rdparty -lxdrpp -lz3
