@@ -30,9 +30,9 @@ namespace stellar {
         
         // reference-code handles only a single qSet, but since we want to be able to handle a dynamic amount of
         // qSets, we have to handle multiple Hashes
-        // TODO: should this be a mapping SCPQuorumSetPtr->Hash or NodeID->Hash
-        // TODO: should this be an array or mapping?
-        const xdr::xvector<Hash> mQSetHash;
+        // TODO: should this be a mapping SCPQuorumSetPtr->Hash or NodeID->Hash? 
+        // Would have to change computeQSetHash function and anywhere that uses mQSetHash
+        const std::map<SCPQuorumSetPtr, Hash> mQSetHash;
 
         // Envelopes are broadcast into a globally visible history which
         // individual nodes advance their consumption of.
@@ -46,7 +46,7 @@ namespace stellar {
 
         // pure virtual functions that have to have an implementation
         void signEnvelope(SCPEnvelope& envelope) override;
-        SCPQuorumSetPtr getQSet(Hash const& qSetHash) override;
+        SCPQuorumSetPtr getQSet(Hash const& qSetHash);
         void emitEnvelope(SCPEnvelope const& envelope) override;
         Hash getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const override;
         ValueWrapperPtr combineCandidates(uint64 slotIndex, ValueWrapperPtrSet const& candidates) override;
@@ -56,6 +56,10 @@ namespace stellar {
         public:
         TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal);
         SCP &getSCP() { return mSCP; }
+
+        // Miscellaneous helper functions used in the implementation, that happen to need
+        // to be members of TestSCP in order to access (possibly private) state in SCP.
+        void setLocalLogPrefix();
 
     };
     
