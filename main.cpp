@@ -23,6 +23,7 @@ using namespace std;
             Inner sets as whole networks might be the key to hierarchical consensus.
         [] (maybe not needed) Support a custom threshold value of node-input.txt.  Currently it is majority.
         [] Make parsing more robust.  Lotta issues.  play around with node-input until it breaks
+        [] in the logging, qSets seem to be the same.  Potentially an issue.  All qSets print as "030000"
 */
 
 
@@ -52,13 +53,13 @@ stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash)
 */
 
 // create a vector of Hashes from all of the SCPQuorumSetPtrs (do I need to dereference SCPQuorumSetPtr)
-const xdr::xvector<stellar::Hash> computeQSetHash(const std::map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum) {
-    xdr::xvector<stellar::Hash> hashes;
+const map<stellar::SCPQuorumSetPtr, stellar::Hash> computeQSetHash(const std::map<stellar::NodeID, stellar::SCPQuorumSetPtr> node_to_quorum) {
+    map<stellar::SCPQuorumSetPtr, stellar::Hash> hashes;
     stellar::Hash curr_hash;
     for (const auto& [curr_NodeID, curr_SCPQuorumSetPtr] : node_to_quorum)
     {
         curr_hash = stellar::xdrSha256(*curr_SCPQuorumSetPtr);
-        hashes.push_back(curr_hash);
+        hashes[curr_SCPQuorumSetPtr] = curr_hash;
     }
 
     return hashes;
@@ -83,18 +84,59 @@ stellar::Network::Network(
 // TestSCP constructor
 stellar::TestSCP::TestSCP(NodeID const& nodeID, SCPQuorumSet const& qSetLocal)
     // third arg is if node is validator or not
+    // TODO: should all nodes be validators?
     : mSCP(*this, nodeID, true, qSetLocal) {};
 
+void stellar::TestSCP::setLocalLogPrefix() {
+    Logging::setFmt(KeyUtils::toShortString(mSCP.getLocalNodeID()));
+}
+
+
+void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope) {
+    // reference-code doesn't bother with implementing signatures
+}
+
+
+// takes qSetHash and returns the associated qSet
+// TODO: our implementation of getQSet will need to iterate over all the qSets and compare all hashes
+// TODO: might be cleaner to pass in our gNetwork as an argument, but not sure if changing the signature would make
+// it incompatible with stellar-core
+// Initial attempt seems pretty hacky.  Iterating through a mapping (key->value) where we compare the value to the hash, then when the value matches hash we compare the associated key to the value of a different mapping?  Would be better to just have a Hash->NodeID mapping...
+stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash) {
+/* FROM REFERENCE CODE
+        SCPQuorumSetPtr
+        TestSCP::getQSet(Hash const& qSetHash)
+        {
+            // We support exactly 1 qset in this model.
+            if (qSetHash != gNetwork->mQSetHash)
+            {
+                using namespace stellar;
+                setLocalLogPrefix();
+                CLOG_ERROR(SCP, "can't find qset hash {}", hexAbbrev(qSetHash));
+                throw std::runtime_error("can't find qset hash");
+            }
+            return gNetwork->mQSet;
+        }
+*/
+}
+
+// misc helper
+unsigned toIvyValT(stellar::Value const& val) {
+    return (unsigned)val.at(0);
+}
+
+// ugly global network.  Will have to change this in the future.  
+// Have this here for now because I'm afraid changing the signature of TestSCP functions (ex: getQSet)
+// that need access to gNetwork will make TestSCP incompatible with stellar-core's SCPDriver
+unique_ptr<stellar::Network> gNetwork;
 
 // TODO: implement
-void stellar::TestSCP::signEnvelope(SCPEnvelope& envelope) {}
-// TODO: our implementation of Q Set will need to iterate over all the qSets and compare all hashes
-stellar::SCPQuorumSetPtr stellar::TestSCP::getQSet(Hash const& qSetHash) {}
 void stellar::TestSCP::emitEnvelope(SCPEnvelope const& envelope) {}
 stellar::Hash stellar::TestSCP::getHashOf(std::vector<xdr::opaque_vec<>> const& vals) const {} // Compiler wouldn't accept without "const" here
 stellar::ValueWrapperPtr stellar::TestSCP::combineCandidates(uint64 slotIndex, ValueWrapperPtrSet const& candidates) {}
 void stellar::TestSCP::setupTimer(uint64 slotIndex, int timerID, std::chrono::milliseconds timeout, std::function<void()> cb) {}
 void stellar::TestSCP::stopTimer(uint64 slotIndex, int timerID) {}
+
 
 
 int main() {
@@ -136,39 +178,34 @@ int main() {
         }
     }
 
-    // Setting up stellar logging
+    // Setting up stellar logging.  This is needed for stellar objects
     stellar::Logging::init();
     stellar::Logging::setLoggingColor(true);
     stellar::Logging::setLogLevel(stellar::LogLevel::LVL_TRACE, "SCP");
 
-    cout << "1\n";
-    unique_ptr<stellar::Network> gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
-    cout << "1.5\n";
-    cout << (gNetwork ? "true" : "false") << "\n";
-    cout << (!gNetwork->mNodeIDs.empty() ? "true" : "false") << "\n";
-    cout << (!gNetwork->mQSet.empty() ? "true" : "false") << "\n";
+    // init Network
+    gNetwork = make_unique<stellar::Network>(&node_vec, &node_to_quorum);
 
+    // Error checking and debugging.  This should be refactored later
     if(gNetwork && !gNetwork->mNodeIDs.empty() && !gNetwork->mQSet.empty()){
 
-        cout << "2\n";
-        const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
-        cout << "3\n";
-        const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
-        cout << "4\n";
-        unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
-
+        // Previous error testing.  Might be useful for future debugging
+        // const stellar::NodeID test_node = gNetwork->mNodeIDs[0];
+        // const stellar::SCPQuorumSet test_quorum = *gNetwork->mQSet.at(test_node);//node_to_quorum.at(node_vec[0]);
+        // unique_ptr<stellar::TestSCP> TestSCP_node = make_unique<stellar::TestSCP>(test_node, test_quorum);
     }
     else {
         cout << "Invalid gNetwork object\n";
     }
-    cout << "5\n";
-    unique_ptr<stellar::TestSCP> testSCP[node_vec.size()];
 
+    unique_ptr<stellar::TestSCP> testSCP[node_vec.size()];
+    // Initialize testSCP class for each node and qSet
     for (int i = 0; i < node_vec.size(); i++) {
-        cout << "i: " << i;
         testSCP[i] = make_unique<stellar::TestSCP>(gNetwork->mNodeIDs[i], *gNetwork->mQSet.at(gNetwork->mNodeIDs[i]));
     }
 
+    // Now start the actual consensus process
+    // have to deal with slots and values
 
     return 0;
 }
